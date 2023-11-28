@@ -272,10 +272,10 @@ void Program::onScroll(int x, int y) {
 
     auto centerX = state.width / 2;
     auto centerY = state.height / 2;
-    std::cout << centerX << ' ' << centerY << std::endl;
+
     state.translatex -= ((centerX - state.mousex) * ((oldZoom - state.zoom) / 200.0f));
     state.translatey -= ((centerY - state.mousey) * ((oldZoom - state.zoom) / 200.0f));
-    std::cout << state.zoom << ' ' << state.translatex << ' ' << state.translatey << std::endl;
+
 }
 
 
