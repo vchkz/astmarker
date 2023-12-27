@@ -16,7 +16,7 @@ struct App {
     Image secondIm;
     Image thirdIm;
 
-
+    const float CircleRadius = 10; // Макс: Установил радиус кружочка в переменную, чтобы в случае смены радиуса точки он менялся везде
 
     float zoom;
 
@@ -37,7 +37,8 @@ struct App {
             ImGui::SFML::ProcessEvent(event);
             if (event.type == sf::Event::Closed) {
                 window.close();
-            } else if (event.type == sf::Event::Resized) {
+            } 
+            else if (event.type == sf::Event::Resized) {
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
 
@@ -59,14 +60,16 @@ struct App {
                 sf::Vector2f temp(((centerX) * (oldZoom - zoom) / 2), ((centerY) * (oldZoom - zoom) / 2));
                 translate += temp;
 
-
-            } else if (event.type == sf::Event::MouseMoved) {
+            } 
+            else if (event.type == sf::Event::MouseMoved) {
                 // Движение мыши
                 sf::Vector2f newCoord(event.mouseMove.x, event.mouseMove.y);
 
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosFloatCen(static_cast<float>(mousePos.x - CircleRadius), static_cast<float>(mousePos.y - CircleRadius));
                 sf::Vector2f mousePosFloat4Second(mousePosFloat.x -static_cast<float>(window.getSize().x) / 3.0f, mousePosFloat.y);
+                sf::Vector2f mousePosFloat4SecondCen(mousePosFloatCen.x - static_cast<float>(window.getSize().x) / 3.0f, mousePosFloatCen.y);
 
 
                 if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened){
@@ -101,11 +104,11 @@ struct App {
                 }
 
                 if (firstIm.selectedCircleIndex != -1) {
-                    firstIm.drawPoints[firstIm.selectedCircleIndex].setPosition(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+                    firstIm.drawPoints[firstIm.selectedCircleIndex].setPosition(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloatCen));
 
                 }
                 if (secondIm.selectedCircleIndex != -1) {
-                    secondIm.drawPoints[secondIm.selectedCircleIndex].setPosition(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat4Second));
+                    secondIm.drawPoints[secondIm.selectedCircleIndex].setPosition(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat4SecondCen));
                 }
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
                     translate += newCoord - mouseCoord;
@@ -114,17 +117,17 @@ struct App {
             }
             else if (event.type == sf::Event::MouseButtonPressed) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x - CircleRadius), static_cast<float>(mousePos.y - CircleRadius));
 
                 if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened){
                     firstIm.selectedCircleIndex = firstIm.hoveredCircleIndex;
                     if (firstIm.selectedCircleIndex == -1) {
-                        sf::CircleShape newCircle(10);
+                        sf::CircleShape newCircle(CircleRadius);
                         newCircle.setFillColor(sf::Color::Red);
                         newCircle.setPosition(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
 
 
-                        secondIm.predictPoint(newCircle.getPosition(), firstIm);
+                        secondIm.predictPoint(newCircle.getPosition(), firstIm, CircleRadius);
 
 
                         firstIm.drawPoints.push_back(newCircle);
@@ -134,10 +137,10 @@ struct App {
                     mousePosFloat.x += -static_cast<float>(window.getSize().x) / 3.0f;
                     secondIm.selectedCircleIndex = secondIm.hoveredCircleIndex;
                     if (secondIm.selectedCircleIndex == -1) {
-                        sf::CircleShape newCircle(10);
+                        sf::CircleShape newCircle(CircleRadius);
                         newCircle.setFillColor(sf::Color::Red);
                         newCircle.setPosition(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
-                        firstIm.predictPoint(newCircle.getPosition(), secondIm);
+                        firstIm.predictPoint(newCircle.getPosition(), secondIm, CircleRadius);
 
                         secondIm.drawPoints.push_back(newCircle);
 //
@@ -171,7 +174,7 @@ struct App {
                 if (ImGui::MenuItem("Save", "CTRL+S", false, true));
                 ImGui::Separator();
                 if (ImGui::MenuItem("Quit")) {
-                    //TODO: Фунуция для выхода из программы
+                    window.close();
                 }
                 ImGui::EndMenu();
             }

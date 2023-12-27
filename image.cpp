@@ -115,7 +115,7 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 
 }
 
-void Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage) {
+void Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage, const float &radius) {
 
 
     int width = texture.getSize().x;
@@ -187,7 +187,7 @@ void Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage) {
     cv::Point2f transformedPoint(transformedPointMat.at<float>(0, 0), transformedPointMat.at<float>(1, 0));
 
 
-    sf::CircleShape newCircle(10);
+    sf::CircleShape newCircle(radius);
     newCircle.setFillColor(sf::Color::Red);
     newCircle.setPosition(transformedPoint.x, transformedPoint.y);
     drawPoints.push_back(newCircle);
