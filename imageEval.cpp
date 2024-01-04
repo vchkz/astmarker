@@ -5,9 +5,9 @@ void ImageEval::genImage(const sf::Texture& firstTexture, const sf::Texture& sec
     cv::Mat firstImg(cv::Size(firstTexture.getSize().x, firstTexture.getSize().y),CV_8UC4, (void*)firstTexture.copyToImage().getPixelsPtr(), cv::Mat::AUTO_STEP);
     cv::Mat secondImg(cv::Size(secondTexture.getSize().x, secondTexture.getSize().y),CV_8UC4, (void*)secondTexture.copyToImage().getPixelsPtr(), cv::Mat::AUTO_STEP);
 
-    cv::imshow("sa", firstImg);
-    cv::imshow("ssssa", secondImg);
-    cv::waitKey();
+//    cv::imshow("sa", firstImg);
+//    cv::imshow("ssssa", secondImg);
+//    cv::waitKey();
 }
 
 
@@ -17,14 +17,14 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     std::vector<cv::Point2f> src_img_points;
     std::vector<cv::Point2f> dst_img_points;
 
-    for (const auto& circle : srcImg.drawPoints) {
-        sf::Vector2f center = circle.getPosition();
-        src_img_points.emplace_back(center.x, center.y);
+    for (const auto& point : srcImg.coordPoints) {
+        src_img_points.emplace_back(point.x, point.y);
     }
-    for (const auto& circle : dstImg.drawPoints) {
-        sf::Vector2f center = circle.getPosition();
-        dst_img_points.emplace_back(center.x, center.y);
+    for (const auto& point : dstImg.coordPoints) {
+        dst_img_points.emplace_back(point.x, point.y);
     }
+
+
     sf::Image tempImage = srcImg.texture.copyToImage();
     cv::Size size(tempImage.getSize().x, tempImage.getSize().y);
     cv::Mat image(size,CV_8UC4, (void*)tempImage.getPixelsPtr(), cv::Mat::AUTO_STEP);
