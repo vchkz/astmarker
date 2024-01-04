@@ -16,7 +16,7 @@ struct App {
     Image secondIm;
     Image thirdIm;
 
-    const float CircleRadius = 10; // Макс: Установил радиус кружочка в переменную, чтобы в случае смены радиуса точки он менялся везде
+    const float CircleRadius = 10;
 
     float zoom;
 
@@ -37,8 +37,16 @@ struct App {
             ImGui::SFML::ProcessEvent(event);
             if (event.type == sf::Event::Closed) {
                 window.close();
-            } 
-            else if (event.type == sf::Event::Resized) {
+            }
+            // Если нет желания каждый раз открывать картинки, то пошеруди в image.cpp, там в openfunnyman() настрой че как надо
+            // Этот блок кода я ввел потому что мне было лень каждый раз открывать картинки вручную
+            /////////////////////////////////////
+            /*if (firstIm.is_opened == false) {
+                firstIm.openFunnyMan();
+                secondIm.openFunnyMan();
+            }*/
+            /////////////////////////////////////
+            if (event.type == sf::Event::Resized) {
                 sf::FloatRect visibleArea(0, 0, event.size.width, event.size.height);
                 window.setView(sf::View(visibleArea));
 
@@ -47,7 +55,7 @@ struct App {
                 thirdIm.internalTexture.create(window.getSize().x / 3, window.getSize().y);
 
             }
-            else if (event.type == sf::Event::MouseWheelScrolled) {
+            if (event.type == sf::Event::MouseWheelScrolled) {
                 auto oldZoom = zoom;
                 // Масштабирование колёсиком мыши
                 if (event.mouseWheelScroll.delta > 0) {
@@ -60,8 +68,42 @@ struct App {
                 sf::Vector2f temp(((centerX) * (oldZoom - zoom) / 2), ((centerY) * (oldZoom - zoom) / 2));
                 translate += temp;
 
-            } 
-            else if (event.type == sf::Event::MouseMoved) {
+            }
+            // Условие для удаления точки. ХЗ как еще реализовать без использования контекстного меню и с таким кодом.
+            // Буду только рад улучшениям
+            ///////////////////////////////////////////////////////
+            if (firstIm.drawPoints.size() != 0) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
+                sf::Vector2f mousePosFloat4Second(mousePosFloat.x - static_cast<float>(window.getSize().x) / 3.0f, mousePosFloat.y);
+                
+                if ((mousePos.x < window.getSize().x / 3) && firstIm.is_opened && secondIm.is_opened) {
+                    for (std::size_t i = 0; i < firstIm.drawPoints.size(); ++i) {
+                        sf::Rect pointBounds = firstIm.drawPoints[i].getGlobalBounds();
+                        sf::Vector2f pointSize(firstIm.sprite.getTransform().transformPoint(pointBounds.left, pointBounds.top));
+                        pointBounds.left = pointSize.x;
+                        pointBounds.top = pointSize.y;
+                        if (pointBounds.contains(mousePosFloat) && sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+                            firstIm.drawPoints.erase(firstIm.drawPoints.begin() + i);
+                            secondIm.drawPoints.erase(secondIm.drawPoints.begin() + i);
+                        }
+                    }
+                }
+                else if (mousePos.x > window.getSize().x / 3 && mousePos.x < window.getSize().x / 3 * 2 && secondIm.is_opened){ 
+                    for (std::size_t i = 0; i < secondIm.drawPoints.size(); ++i) {
+                        sf::Rect pointBounds = secondIm.drawPoints[i].getGlobalBounds();
+                        sf::Vector2f pointSize(secondIm.sprite.getTransform().transformPoint(pointBounds.left, pointBounds.top));
+                        pointBounds.left = pointSize.x;
+                        pointBounds.top = pointSize.y;
+                        if (pointBounds.contains(mousePosFloat4Second) && sf::Mouse::isButtonPressed(sf::Mouse::Right)) {
+                            secondIm.drawPoints.erase(secondIm.drawPoints.begin() + i);
+                            firstIm.drawPoints.erase(firstIm.drawPoints.begin() + i);
+                        }
+                    }
+                }
+            }
+            ///////////////////////////////////////////////////////////////
+            if (event.type == sf::Event::MouseMoved) {
                 // Движение мыши
                 sf::Vector2f newCoord(event.mouseMove.x, event.mouseMove.y);
 
@@ -72,7 +114,7 @@ struct App {
                 sf::Vector2f mousePosFloat4SecondCen(mousePosFloatCen.x - static_cast<float>(window.getSize().x) / 3.0f, mousePosFloatCen.y);
 
 
-                if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened){
+                if ((mousePos.x < window.getSize().x / 3) && firstIm.is_opened && secondIm.is_opened){
                     bool loopCompleted = true;
                     for (std::size_t i = 0; i < firstIm.drawPoints.size(); ++i) {
                         sf::Rect pointBounds = firstIm.drawPoints[i].getGlobalBounds();
@@ -87,7 +129,7 @@ struct App {
                     }
                     if (loopCompleted){firstIm.hoveredCircleIndex = -1;}
                 }
-                if(mousePos.x > window.getSize().x / 3 and mousePos.x < window.getSize().x / 3 * 2 and secondIm.is_opened){
+                if(mousePos.x > window.getSize().x / 3 && mousePos.x < window.getSize().x / 3 * 2 && secondIm.is_opened){
                     bool loopCompleted = true;
                     for (std::size_t i = 0; i < secondIm.drawPoints.size(); ++i) {
                         sf::Rect pointBounds = secondIm.drawPoints[i].getGlobalBounds();
@@ -115,47 +157,44 @@ struct App {
                 }
                 mouseCoord = newCoord;
             }
-            else if (event.type == sf::Event::MouseButtonPressed) {
+            if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x - CircleRadius), static_cast<float>(mousePos.y - CircleRadius));
 
-                if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened){
-                    firstIm.selectedCircleIndex = firstIm.hoveredCircleIndex;
-                    if (firstIm.selectedCircleIndex == -1) {
-                        sf::CircleShape newCircle(CircleRadius);
-                        newCircle.setFillColor(sf::Color::Red);
-                        newCircle.setPosition(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
-
-
-                        secondIm.predictPoint(newCircle.getPosition(), firstIm, CircleRadius);
-
-
-                        firstIm.drawPoints.push_back(newCircle);
-                    }
+                if ((mousePos.x < window.getSize().x / 3) && firstIm.is_opened && secondIm.is_opened) {
+                        firstIm.selectedCircleIndex = firstIm.hoveredCircleIndex;
+                        if (true) {
+                            if (firstIm.selectedCircleIndex == -1) {
+                                sf::CircleShape newCircle(CircleRadius);
+                                newCircle.setFillColor(sf::Color::Red);
+                                newCircle.setPosition(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+                                secondIm.predictPoint(newCircle.getPosition(), firstIm, CircleRadius);
+                                firstIm.drawPoints.push_back(newCircle);
+                            }
+                        }
                 }
-                else if (mousePos.x > window.getSize().x / 3 and mousePos.x < window.getSize().x / 3 * 2 and secondIm.is_opened){
-                    mousePosFloat.x += -static_cast<float>(window.getSize().x) / 3.0f;
-                    secondIm.selectedCircleIndex = secondIm.hoveredCircleIndex;
-                    if (secondIm.selectedCircleIndex == -1) {
-                        sf::CircleShape newCircle(CircleRadius);
-                        newCircle.setFillColor(sf::Color::Red);
-                        newCircle.setPosition(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
-                        firstIm.predictPoint(newCircle.getPosition(), secondIm, CircleRadius);
-
-                        secondIm.drawPoints.push_back(newCircle);
-//
-                    }
+                else if (mousePos.x > window.getSize().x / 3 && mousePos.x < window.getSize().x / 3 * 2 && secondIm.is_opened && firstIm.is_opened) {
+                        mousePosFloat.x += -static_cast<float>(window.getSize().x) / 3.0f;
+                        secondIm.selectedCircleIndex = secondIm.hoveredCircleIndex;
+                        if (true) {
+                            if (secondIm.selectedCircleIndex == -1) {
+                                sf::CircleShape newCircle(CircleRadius);
+                                newCircle.setFillColor(sf::Color::Red);
+                                newCircle.setPosition(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+                                firstIm.predictPoint(newCircle.getPosition(), secondIm, CircleRadius);
+                                secondIm.drawPoints.push_back(newCircle);
+                            }
+                        }
                 }
-            } else if (event.type == sf::Event::MouseButtonReleased) {
-                if (firstIm.selectedCircleIndex != -1 or secondIm.selectedCircleIndex != -1){
+            } 
+            if (event.type == sf::Event::MouseButtonReleased) {
+                if (firstIm.selectedCircleIndex != -1 || secondIm.selectedCircleIndex != -1) {
                     firstIm.selectedCircleIndex = -1;
                     secondIm.selectedCircleIndex = -1;
-                    thirdIm.genWarpImg(firstIm, secondIm);
                 }
-                // Сбрасываем индекс выбранного круга при отпускании кнопки мыши
-//                firstIm.selectedCircleIndex = -1;
-//                secondIm.selectedCircleIndex = -1;
-
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)) {
+                thirdIm.genWarpImg(firstIm, secondIm);
             }
         }
     }
@@ -173,9 +212,7 @@ struct App {
                 ImGui::Separator();
                 if (ImGui::MenuItem("Save", "CTRL+S", false, true));
                 ImGui::Separator();
-                if (ImGui::MenuItem("Quit")) {
-                    window.close();
-                }
+                if (ImGui::MenuItem("Quit")) window.close();
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
@@ -217,7 +254,7 @@ struct App {
             for (std::size_t i = 0; i < firstIm.drawPoints.size(); ++i) {
                 sf::CircleShape tempCircle = firstIm.drawPoints[i];
                 tempCircle.setPosition(firstIm.sprite.getTransform().transformPoint(firstIm.drawPoints[i].getPosition()));
-                if(firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i)tempCircle.setFillColor(sf::Color::Blue);
+                if(firstIm.hoveredCircleIndex == i || secondIm.hoveredCircleIndex == i)tempCircle.setFillColor(sf::Color::Blue);
                 firstIm.internalTexture.draw(tempCircle);
             }
             firstIm.internalTexture.display();
@@ -236,7 +273,7 @@ struct App {
             for (std::size_t i = 0; i < secondIm.drawPoints.size(); ++i) {
                 sf::CircleShape tempCircle = secondIm.drawPoints[i];
                 tempCircle.setPosition(secondIm.sprite.getTransform().transformPoint(secondIm.drawPoints[i].getPosition()));
-                if(firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i)tempCircle.setFillColor(sf::Color::Blue);
+                if(firstIm.hoveredCircleIndex == i || secondIm.hoveredCircleIndex == i)tempCircle.setFillColor(sf::Color::Blue);
                 secondIm.internalTexture.draw(tempCircle);
             }
             secondIm.internalTexture.display();
@@ -266,9 +303,11 @@ struct App {
             handleInput();
             update();
             render();
-
         }
         ImGui::SFML::Shutdown();
+    }
+    ~App() {
+        std::cout << firstIm.drawPoints.size() << " " << secondIm.drawPoints.size();
     }
 };
 

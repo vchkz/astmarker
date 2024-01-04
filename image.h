@@ -13,6 +13,7 @@ public:
 
     bool is_opened = false;
     void openImage();
+    void openFunnyMan();
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
     void predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage, const float &radius);

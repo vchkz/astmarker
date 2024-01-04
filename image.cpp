@@ -8,6 +8,13 @@
 
 
 Image::Image() = default;
+void Image::openFunnyMan() {
+    if (texture.loadFromFile("C:/users/run_c/source/repos/astslava/funny_man.png")) {
+        texture.loadFromFile("C:/users/run_c/source/repos/astslava/funny_man.png");
+        is_opened = true;
+        sprite.setTexture(texture);
+    }
+}
 void Image::openImage() {
 //    texture.loadFromFile("D:/SLP/test.png");
 //    is_opened = true;
@@ -193,4 +200,3 @@ void Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage, c
     drawPoints.push_back(newCircle);
 
 }
-
