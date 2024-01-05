@@ -171,6 +171,17 @@ struct App {
                     secondIm.selectedCircleIndex = -1;
                     thirdIm.genWarpImg(firstIm, secondIm);
                 }
+            } else if (event.type == sf::Event::KeyPressed){
+                if (event.key.code == sf::Keyboard::Delete){
+                    if(firstIm.hoveredCircleIndex != -1 or secondIm.hoveredCircleIndex != -1){
+                        int index;
+                        if (firstIm.hoveredCircleIndex != -1){index = firstIm.hoveredCircleIndex;}
+                        else if (secondIm.hoveredCircleIndex != -1){index = secondIm.hoveredCircleIndex;}
+                        firstIm.coordPoints.erase(firstIm.coordPoints.begin() + index);
+                        secondIm.coordPoints.erase(secondIm.coordPoints.begin() + index);
+                        thirdIm.genWarpImg(firstIm, secondIm);
+                    }
+                }
             }
         }
     }
