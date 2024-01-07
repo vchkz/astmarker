@@ -6,19 +6,19 @@
 #include <vector>
 class ImageEval : public Image{
 public:
-    float transparency = 0.5f;
+    float transparency = 128.0f;
     float lineWidth = 5.0f;
     float pointSize = 10.0f;
+    bool showPoints = true;
 
     enum modelType {
-        affine = 0,
+        affine,
         perspective
-    } currentModelType = affine;
+    } currentModelType = perspective;
 
     cv::Mat transformMatrix;
-    void genImage(const sf::Texture& firstTexture, const sf::Texture& secondTexture);
     void genEvalImg(const Image &srcImg, const Image &dstImg);
-    sf::Vector2f transformPoint(sf::Vector2f point);
+//    void transformPoints(std::vector<sf::Vector2f> points);
 
 
 
