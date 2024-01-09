@@ -16,6 +16,7 @@ void Image::openImage() {
         is_opened = true;
         sprite.setTexture(texture);
         ast = Asterism(texture.getSize().x, texture.getSize().y);
+        drawPicture();
     }
     else {
         std::cout << "nfd error" << std::endl;
@@ -121,6 +122,27 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
     clock_t end = clock();
     double duration = double(end - start) / CLOCKS_PER_SEC;
     std::cout << "time: " << duration  << std::endl;
+}
+
+void Image::drawCircles(float CircleRadius) {
+    pointsTexture.clear(sf::Color(0,0,0,0));
+    for (std::size_t i = 0; i < ast.getPts().size(); ++i) {
+        sf::CircleShape tempCircle(CircleRadius);
+        cv::Point point(ast.getPts()[i]);
+        tempCircle.setPosition(sprite.getTransform().transformPoint(point.x, point.y));
+        tempCircle.move(-CircleRadius, -CircleRadius);
+        tempCircle.setFillColor(sf::Color::Red);
+        if (hoveredCircleIndex == i){
+            tempCircle.setOutlineThickness(3);
+            tempCircle.setOutlineColor(sf::Color(255, 178, 102));
+        }
+        pointsTexture.draw(tempCircle);
+    }
+}
+
+void Image::drawPicture() {
+    internalTexture.clear();
+    internalTexture.draw(sprite);
 }
 
 

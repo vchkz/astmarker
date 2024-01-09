@@ -9,6 +9,8 @@ public:
     sf::Texture texture;
     sf::Sprite sprite;
     sf::RenderTexture internalTexture;
+
+    sf::RenderTexture pointsTexture;
     Asterism ast;
 //    std::vector<sf::Vector2f> coordPoints;
     int hoveredCircleIndex = -1;
@@ -18,6 +20,9 @@ public:
     bool is_opened = false;
 
     void openImage();
+
+    void drawCircles(float CircleRadius);
+    void drawPicture();
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
 //    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);
