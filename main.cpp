@@ -388,6 +388,7 @@ struct App {
                     }
                     firstIm.internalTexture.display();
                     window.draw(internalSprite);
+                    window.draw(internalSprite);
                 }
                 if (secondIm.is_opened) {
                     secondIm.internalTexture.clear();
