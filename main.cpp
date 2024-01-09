@@ -22,7 +22,8 @@ struct App {
     Image secondIm;
     Image thirdIm;
 
-    const float CircleRadius = 10;
+    float CircleRadius = 10;
+    float transparency = 0.5f;
 
     ImageEval evaluationImg;
 
@@ -122,9 +123,9 @@ struct App {
                     // Обработка hover для первой трети окна
                     if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened) {
                         bool loopCompleted = true;
-                        for (int i = 0; i < firstIm.coordPoints.size(); ++i) {
+                        for (int i = 0; i < firstIm.ast.getPts().size(); ++i) {
                             sf::Vector2f circleCenter(
-                                    firstIm.sprite.getTransform().transformPoint(firstIm.coordPoints[i]));
+                                    firstIm.sprite.getTransform().transformPoint(firstIm.ast.getPts()[i].x, firstIm.ast.getPts()[i].y));
 
                             if (std::pow(mousePosFloat.x - circleCenter.x, 2) +
                                 std::pow(mousePosFloat.y - circleCenter.y, 2) <= std::pow(CircleRadius, 2)) {
@@ -139,9 +140,9 @@ struct App {
                     if (mousePos.x > window.getSize().x / 3 and mousePos.x < window.getSize().x / 3 * 2 and
                         secondIm.is_opened) {
                         bool loopCompleted = true;
-                        for (int i = 0; i < secondIm.coordPoints.size(); ++i) {
+                        for (int i = 0; i < secondIm.ast.getPts().size(); ++i) {
                             sf::Vector2f circleCenter(
-                                    secondIm.sprite.getTransform().transformPoint(secondIm.coordPoints[i]));
+                                    secondIm.sprite.getTransform().transformPoint(secondIm.ast.getPts()[i].x, secondIm.ast.getPts()[i].y));
                             if (std::pow(mousePosFloat4Second.x - circleCenter.x, 2) +
                                 std::pow(mousePosFloat4Second.y - circleCenter.y, 2) <= std::pow(CircleRadius, 2)) {
                                 secondIm.hoveredCircleIndex = i;
@@ -154,14 +155,20 @@ struct App {
 
 
                     if (firstIm.selectedCircleIndex != -1) {
-                        firstIm.coordPoints[firstIm.selectedCircleIndex] +=
-                                firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat) -
-                                firstIm.sprite.getInverseTransform().transformPoint(mouseCoord);
+                        if (mousePos.x > window.getSize().x / 3){mousePosFloat -= sf::Vector2f(window.getSize().x/3, 0);}
+                        sf::Vector2i position(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+                        firstIm.ast.setPosition(firstIm.selectedCircleIndex, cv::Point(position.x, position.y));
+//                        sf::Vector2i offset(sf::Vector2i(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat)) -
+//                                                    sf::Vector2i(firstIm.sprite.getInverseTransform().transformPoint(mouseCoord)));
+//                        firstIm.ast.movePt(firstIm.selectedCircleIndex, cv::Point(offset.x, offset.y));
                     }
                     if (secondIm.selectedCircleIndex != -1) {
-                        secondIm.coordPoints[secondIm.selectedCircleIndex] +=
-                                secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat) -
-                                secondIm.sprite.getInverseTransform().transformPoint(mouseCoord);
+                        if (mousePos.x > window.getSize().x / 3){mousePosFloat -= sf::Vector2f(window.getSize().x/3, 0);}
+                        sf::Vector2i position(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+                        secondIm.ast.setPosition(secondIm.selectedCircleIndex, cv::Point(position.x, position.y));
+//                        sf::Vector2i offset(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat) -
+//                                                    secondIm.sprite.getInverseTransform().transformPoint(mouseCoord));
+//                        secondIm.ast.movePt(secondIm.selectedCircleIndex, cv::Point(offset.x, offset.y));
                     }
                 }
 
@@ -184,9 +191,9 @@ struct App {
 
                             sf::Vector2f point = firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat);
 
-                            secondIm.coordPoints.push_back(secondIm.predictPoint(point, firstIm));
-                            firstIm.coordPoints.push_back(point);
-                            secondIm.selectedCircleIndex = secondIm.coordPoints.size() - 1;
+                            secondIm.ast.insertPt(secondIm.ast.predictPairedPt(cv::Point(point.x, point.y), firstIm.ast));
+                            firstIm.ast.insertPt(cv::Point(point.x, point.y));
+                            secondIm.selectedCircleIndex = secondIm.ast.getPts().size() - 1;
                             pointMapping = true;
                         }
                     } else if (mousePos.x > window.getSize().x / 3 and mousePos.x < window.getSize().x / 3 * 2 and
@@ -198,11 +205,9 @@ struct App {
                         if (secondIm.selectedCircleIndex == -1 and
                             secondIm.sprite.getGlobalBounds().contains(mousePosFloat)) {
                             sf::Vector2f point = secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat);
-
-                            firstIm.coordPoints.push_back(firstIm.predictPoint(point, secondIm));
-                            secondIm.coordPoints.push_back(point);
-
-                            firstIm.selectedCircleIndex = firstIm.coordPoints.size() - 1;
+                            firstIm.ast.insertPt(firstIm.ast.predictPairedPt(cv::Point(point.x, point.y), secondIm.ast));
+                            secondIm.ast.insertPt(cv::Point(point.x, point.y));
+                            firstIm.selectedCircleIndex = firstIm.ast.getPts().size() - 1;
                             pointMapping = true;
                         }
                     }
@@ -220,8 +225,9 @@ struct App {
                         int index;
                         if (firstIm.hoveredCircleIndex != -1) { index = firstIm.hoveredCircleIndex; }
                         else if (secondIm.hoveredCircleIndex != -1) { index = secondIm.hoveredCircleIndex; }
-                        firstIm.coordPoints.erase(firstIm.coordPoints.begin() + index);
-                        secondIm.coordPoints.erase(secondIm.coordPoints.begin() + index);
+                        firstIm.ast.deletePt(index);
+                        secondIm.ast.deletePt(index);
+
                         thirdIm.genWarpImg(firstIm, secondIm);
                     }
                 }
@@ -260,7 +266,7 @@ struct App {
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("Warp evaluation")) {
-                if (ImGui::MenuItem("Warp image", nullptr, false, firstIm.coordPoints.size()>3)){
+                if (ImGui::MenuItem("Warp image", nullptr, false, firstIm.ast.getPts().size()>3)){
                     currentState = DistortionEvaluationScreen;
                     evaluationImg.genEvalImg(firstIm, secondIm);
                     showEvaluationSettingsWindow = true;
@@ -274,8 +280,10 @@ struct App {
                 }
                 ImGui::EndMenu();
             }
-            ImGui::EndMainMenuBar();
+
         }
+
+
 
         if (showEvaluationSettingsWindow) {
             ImGui::Begin("Model Settings", &showEvaluationSettingsWindow);
@@ -311,31 +319,46 @@ struct App {
         }
 
 
-        ImGui::Begin("statusbar", nullptr,
+        ImGui::Begin("edit", nullptr,
                      ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
                      ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         {
             ImGui::SetWindowPos(ImVec2(0.0f, window.getSize().y - 30.0f));
             ImGui::SetWindowSize(ImVec2(window.getSize().x, 30.0f));
+            ImGui::Columns(3);
+            ImGui::SliderFloat("Point width", &CircleRadius, 1.0f, 20.0f);
+            ImGui::NextColumn();
+            ImGui::SliderFloat("Transparency", &transparency, 0.0f, 1.0f);
 
-            ImGui::Columns(8);
-            ImGui::Text("win size: %d %d", window.getSize().x, window.getSize().y);
-            ImGui::NextColumn();
-            ImGui::Text("translate: %f %f", translate.x, translate.y);
-            ImGui::NextColumn();
-            ImGui::Text("zoom: %f", zoom);
-            ImGui::NextColumn();
-            ImGui::Text("mouse: %d %d", sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
-            ImGui::NextColumn();
-            ImGui::Text("1 hoverID: %d", firstIm.hoveredCircleIndex);
-            ImGui::NextColumn();
-            ImGui::Text("2 hoverID: %d", secondIm.hoveredCircleIndex);
-            ImGui::NextColumn();
-            ImGui::Text("1 selectID: %d", firstIm.selectedCircleIndex);
-            ImGui::NextColumn();
-            ImGui::Text("2 selectID: %d", secondIm.selectedCircleIndex);
         }
         ImGui::End();
+
+
+//        ImGui::Begin("statusbar", nullptr,
+//                     ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoTitleBar |
+//                     ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+//        {
+//            ImGui::SetWindowPos(ImVec2(0.0f, window.getSize().y - 30.0f));
+//            ImGui::SetWindowSize(ImVec2(window.getSize().x, 30.0f));
+//
+//            ImGui::Columns(8);
+//            ImGui::Text("win size: %d %d", window.getSize().x, window.getSize().y);
+//            ImGui::NextColumn();
+//            ImGui::Text("translate: %f %f", translate.x, translate.y);
+//            ImGui::NextColumn();
+//            ImGui::Text("zoom: %f", zoom);
+//            ImGui::NextColumn();
+//            ImGui::Text("mouse: %d %d", sf::Mouse::getPosition(window).x, sf::Mouse::getPosition(window).y);
+//            ImGui::NextColumn();
+//            ImGui::Text("1 hoverID: %d", firstIm.hoveredCircleIndex);
+//            ImGui::NextColumn();
+//            ImGui::Text("2 hoverID: %d", secondIm.hoveredCircleIndex);
+//            ImGui::NextColumn();
+//            ImGui::Text("1 selectID: %d", firstIm.selectedCircleIndex);
+//            ImGui::NextColumn();
+//            ImGui::Text("2 selectID: %d", secondIm.selectedCircleIndex);
+//        }
+//        ImGui::End();
     }
 
     void render() {
@@ -351,12 +374,16 @@ struct App {
                     firstIm.sprite.setScale(zoom, zoom);
                     firstIm.internalTexture.draw(firstIm.sprite);
 
-                    for (std::size_t i = 0; i < firstIm.coordPoints.size(); ++i) {
+                    for (std::size_t i = 0; i < firstIm.ast.getPts().size(); ++i) {
                         sf::CircleShape tempCircle(CircleRadius);
-                        tempCircle.setPosition(firstIm.sprite.getTransform().transformPoint(firstIm.coordPoints[i]));
+                        cv::Point point(firstIm.ast.getPts()[i]);
+                        tempCircle.setPosition(firstIm.sprite.getTransform().transformPoint(point.x, point.y));
                         tempCircle.move(-CircleRadius, -CircleRadius);
-                        if (firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i)
-                            tempCircle.setFillColor(sf::Color::Blue);
+                        tempCircle.setFillColor(sf::Color::Red);
+                        if (firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i){
+                            tempCircle.setOutlineThickness(3);
+                            tempCircle.setOutlineColor(sf::Color(255, 178, 102));
+                        }
                         firstIm.internalTexture.draw(tempCircle);
                     }
                     firstIm.internalTexture.display();
@@ -372,12 +399,17 @@ struct App {
 
                     secondIm.internalTexture.draw(secondIm.sprite);
 
-                    for (std::size_t i = 0; i < secondIm.coordPoints.size(); ++i) {
+                    for (std::size_t i = 0; i < secondIm.ast.getPts().size(); ++i) {
                         sf::CircleShape tempCircle(CircleRadius);
-                        tempCircle.setPosition(secondIm.sprite.getTransform().transformPoint(secondIm.coordPoints[i]));
+                        cv::Point point(secondIm.ast.getPts()[i]);
+                        tempCircle.setPosition(secondIm.sprite.getTransform().transformPoint(point.x, point.y));
                         tempCircle.move(-CircleRadius, -CircleRadius);
-                        if (firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i)
-                            tempCircle.setFillColor(sf::Color::Blue);
+                        tempCircle.setFillColor(sf::Color::Red);
+                        if (firstIm.hoveredCircleIndex == i or secondIm.hoveredCircleIndex == i){
+                            tempCircle.setOutlineThickness(3);
+                            tempCircle.setOutlineColor(sf::Color(255, 178, 102));
+                        }
+
                         secondIm.internalTexture.draw(tempCircle);
                     }
                     secondIm.internalTexture.display();
@@ -391,6 +423,11 @@ struct App {
                     thirdIm.sprite.setPosition(translate);
                     thirdIm.sprite.setScale(zoom, zoom);
                     thirdIm.internalTexture.draw(thirdIm.sprite);
+                    secondIm.sprite.setPosition(translate);
+                    secondIm.sprite.setScale(zoom, zoom);
+                    secondIm.sprite.setColor(sf::Color(255, 255, 255, transparency * 255));
+                    thirdIm.internalTexture.draw(secondIm.sprite);
+                    secondIm.sprite.setColor(sf::Color(255, 255, 255, 255));
                     thirdIm.internalTexture.display();
                     window.draw(internalSprite);
                 }
@@ -409,9 +446,11 @@ struct App {
                     evaluationImg.sprite.setColor(sf::Color(255, 255, 255, evaluationImg.transparency));
                     evaluationImg.internalTexture.draw(evaluationImg.sprite);
                     if (evaluationImg.showPoints) {
-                        for (std::size_t i = 0; i < firstIm.coordPoints.size(); ++i) {
-                            sf::Vector2f srcPoint(secondIm.sprite.getTransform().transformPoint(secondIm.coordPoints[i]));
-                            sf::Vector2f dstPoint(evaluationImg.sprite.getTransform().transformPoint(evaluationImg.coordPoints[i]));
+                        for (std::size_t i = 0; i < firstIm.ast.getPts().size(); ++i) {
+                            cv::Point srcPointCV(secondIm.ast.getPts()[i]);
+                            cv::Point dstPointCV(evaluationImg.ast.getPts()[i]);
+                            sf::Vector2f srcPoint(secondIm.sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
+                            sf::Vector2f dstPoint(evaluationImg.sprite.getTransform().transformPoint(dstPointCV.x, dstPointCV.y));
 
                             //lines
                             sf::Vector2f delta = dstPoint - srcPoint;
@@ -432,6 +471,7 @@ struct App {
                             //points
                             sf::CircleShape srcCircle(evaluationImg.pointSize);
                             srcCircle.setPosition(srcPoint);
+                            srcCircle.setFillColor(sf::Color::Blue);
                             srcCircle.move(-evaluationImg.pointSize, -evaluationImg.pointSize);
                             evaluationImg.internalTexture.draw(srcCircle);
 
@@ -462,9 +502,11 @@ struct App {
                     evaluationImg.internalTexture.draw(evaluationImg.sprite);
 
                     if (evaluationImg.showPoints) {
-                        for (std::size_t i = 0; i < secondIm.coordPoints.size(); ++i) {
-                            sf::Vector2f srcPoint(firstIm.sprite.getTransform().transformPoint(firstIm.coordPoints[i]));
-                            sf::Vector2f dstPoint(evaluationImg.sprite.getTransform().transformPoint(evaluationImg.coordPoints[i]));
+                        for (std::size_t i = 0; i < secondIm.ast.getPts().size(); ++i) {
+                            cv::Point srcPointCV(firstIm.ast.getPts()[i]);
+                            cv::Point dstPointCV(evaluationImg.ast.getPts()[i]);
+                            sf::Vector2f srcPoint(firstIm.sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
+                            sf::Vector2f dstPoint(evaluationImg.sprite.getTransform().transformPoint(dstPointCV.x, dstPointCV.y));
 
                             //lines
                             sf::Vector2f delta = dstPoint - srcPoint;
@@ -485,6 +527,7 @@ struct App {
                             //points
                             sf::CircleShape srcCircle(evaluationImg.pointSize);
                             srcCircle.setPosition(srcPoint);
+                            srcCircle.setFillColor(sf::Color::Blue);
                             srcCircle.move(-evaluationImg.pointSize, -evaluationImg.pointSize);
                             evaluationImg.internalTexture.draw(srcCircle);
 

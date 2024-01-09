@@ -1,5 +1,6 @@
 #include <SFML/Graphics.hpp>
 #include <opencv2/opencv.hpp>
+#include "asterisms.h"
 #ifndef ASTMARKER_IMAGE_H
 #define ASTMARKER_IMAGE_H
 class Image {
@@ -8,7 +9,8 @@ public:
     sf::Texture texture;
     sf::Sprite sprite;
     sf::RenderTexture internalTexture;
-    std::vector<sf::Vector2f> coordPoints;
+    Asterism ast;
+//    std::vector<sf::Vector2f> coordPoints;
     int hoveredCircleIndex = -1;
     int selectedCircleIndex = -1;
     float scaleFactor = 1.0f;
@@ -18,6 +20,6 @@ public:
     void openImage();
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
-    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);
+//    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);
 };
 #endif //ASTMARKER_IMAGE_H

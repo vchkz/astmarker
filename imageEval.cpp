@@ -9,10 +9,10 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     std::vector<cv::Point2f> src_img_points;
     std::vector<cv::Point2f> dst_img_points;
 
-    for (const auto& point : srcImg.coordPoints) {
+    for (const auto& point : srcImg.ast.getPts()) {
         src_img_points.emplace_back(point.x, point.y);
     }
-    for (const auto& point : dstImg.coordPoints) {
+    for (const auto& point : dstImg.ast.getPts()) {
         dst_img_points.emplace_back(point.x, point.y);
     }
 
@@ -24,9 +24,11 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     cv::Mat warped_img;
 
     //warping points
-    coordPoints.clear();
+//    coordPoints.clear();
+    ast = Asterism(size.width, size.height);
+
     std::vector<cv::Point2f> cvPoints;
-    for (const auto& point : srcImg.coordPoints) {
+    for (const auto& point : srcImg.ast.getPts()) {
         cvPoints.emplace_back(point.x, point.y);
     }
     std::vector<cv::Point2f> transformedPoints;
@@ -59,7 +61,8 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     }
 
     for (const auto& point : transformedPoints) {
-        coordPoints.emplace_back(point.x, point.y);
+        ast.insertPt(point);
+//        coordPoints.emplace_back(point.x, point.y);
     }
 
 

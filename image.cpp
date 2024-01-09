@@ -3,11 +3,9 @@
 #include <opencv2/opencv.hpp>
 #include <vector>
 #include <ctime>
-//#include <opencv2/cudaarithm.hpp>
-//#include <opencv2/cudaimgproc.hpp>
-
 
 Image::Image() = default;
+
 void Image::openImage() {
 //    texture.loadFromFile("D:/SLP/test.png");
 //    is_opened = true;
@@ -21,6 +19,7 @@ void Image::openImage() {
         }
         is_opened = true;
         sprite.setTexture(texture);
+        ast = Asterism(texture.getSize().x, texture.getSize().y);
     }
     else {
         std::cout << "nfd error" << std::endl;
@@ -39,10 +38,12 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 
 
 
-    for (const auto& point : firstSourceImage.coordPoints) {
+
+
+    for (const auto& point : firstSourceImage.ast.getPts()) {
         a_n.emplace_back(point.x, point.y);
     }
-    for (const auto& point : secondSourceImage.coordPoints) {
+    for (const auto& point : secondSourceImage.ast.getPts()) {
         a_k.emplace_back(point.x, point.y);
     }
 
@@ -127,69 +128,69 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 }
 
 
-sf::Vector2f Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage) {
-
-    int width = texture.getSize().x - 1;
-    int height = texture.getSize().y - 1;
-
-    std::vector<cv::Point2f> left_img_points;
-    std::vector<cv::Point2f> right_img_points;
-
-
-//    cv::Rect left_img_rect(0, 0, left_img.cols, left_img.rows);
-//    cv::Rect right_img_rect(0, 0, right_img.cols, right_img.rows);
-    cv::Rect left_img_rect(0, 0, width+1, height+1);
-    cv::Rect right_img_rect(0, 0, width+1, height+1);
-
-    cv::Subdiv2D left_img_subdiv(left_img_rect);
-    cv::Subdiv2D right_img_subdiv(right_img_rect);
-
-    left_img_points = { cv::Point2f(0, 0),
-                        cv::Point2f(0, height),
-                        cv::Point2f(width, 0),
-                        cv::Point2f(width, height) };
-    right_img_points = { cv::Point2f(0, 0),
-                         cv::Point2f(0, height),
-                         cv::Point2f(width, 0),
-                         cv::Point2f(width, height) };
-
-
-    for (const auto& circle : srcImage.coordPoints) {
-        left_img_points.emplace_back(circle.x, circle.y);
-    }
-    for (const auto& circle : coordPoints) {
-        right_img_points.emplace_back(circle.x, circle.y);
-    }
-
-
-    left_img_subdiv.insert(left_img_points);
-    right_img_subdiv.insert(right_img_points);
-
-    cv::Point2f point(pointCoord.x, pointCoord.y);
-
-
-    int e, v;
-    int l = left_img_subdiv.locate(point, e, v);
-    int ne = left_img_subdiv.getEdge(e, cv::Subdiv2D::NEXT_AROUND_LEFT);
-
-    std::vector<cv::Point2f> left_triangle = { left_img_subdiv.getVertex(left_img_subdiv.edgeOrg(e)),
-                                               left_img_subdiv.getVertex(left_img_subdiv.edgeDst(e)),
-                                               left_img_subdiv.getVertex(left_img_subdiv.edgeDst(ne)) };
-
-
-    std::vector<cv::Point2f> right_triangle = { right_img_subdiv.getVertex(left_img_subdiv.edgeOrg(e)),
-                                                right_img_subdiv.getVertex(left_img_subdiv.edgeDst(e)),
-                                                right_img_subdiv.getVertex(left_img_subdiv.edgeDst(ne)) };
-
-
-
-    cv::Mat_<float> M = getAffineTransform(left_triangle, right_triangle);
-
-    cv::Mat pointMat = (cv::Mat_<float>(3, 1) << point.x, point.y, 1);
-
-    cv::Mat transformedPointMat = M * pointMat;
-
-    cv::Point2f transformedPoint(transformedPointMat.at<float>(0, 0), transformedPointMat.at<float>(1, 0));
-
-    return sf::Vector2f(transformedPoint.x,transformedPoint.y);
-}
+//sf::Vector2f Image::predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage) {
+//
+//    int width = texture.getSize().x - 1;
+//    int height = texture.getSize().y - 1;
+//
+//    std::vector<cv::Point2f> left_img_points;
+//    std::vector<cv::Point2f> right_img_points;
+//
+//
+////    cv::Rect left_img_rect(0, 0, left_img.cols, left_img.rows);
+////    cv::Rect right_img_rect(0, 0, right_img.cols, right_img.rows);
+//    cv::Rect left_img_rect(0, 0, width+1, height+1);
+//    cv::Rect right_img_rect(0, 0, width+1, height+1);
+//
+//    cv::Subdiv2D left_img_subdiv(left_img_rect);
+//    cv::Subdiv2D right_img_subdiv(right_img_rect);
+//
+//    left_img_points = { cv::Point2f(0, 0),
+//                        cv::Point2f(0, height),
+//                        cv::Point2f(width, 0),
+//                        cv::Point2f(width, height) };
+//    right_img_points = { cv::Point2f(0, 0),
+//                         cv::Point2f(0, height),
+//                         cv::Point2f(width, 0),
+//                         cv::Point2f(width, height) };
+//
+//
+//    for (const auto& circle : srcImage.coordPoints) {
+//        left_img_points.emplace_back(circle.x, circle.y);
+//    }
+//    for (const auto& circle : coordPoints) {
+//        right_img_points.emplace_back(circle.x, circle.y);
+//    }
+//
+//
+//    left_img_subdiv.insert(left_img_points);
+//    right_img_subdiv.insert(right_img_points);
+//
+//    cv::Point2f point(pointCoord.x, pointCoord.y);
+//
+//
+//    int e, v;
+//    int l = left_img_subdiv.locate(point, e, v);
+//    int ne = left_img_subdiv.getEdge(e, cv::Subdiv2D::NEXT_AROUND_LEFT);
+//
+//    std::vector<cv::Point2f> left_triangle = { left_img_subdiv.getVertex(left_img_subdiv.edgeOrg(e)),
+//                                               left_img_subdiv.getVertex(left_img_subdiv.edgeDst(e)),
+//                                               left_img_subdiv.getVertex(left_img_subdiv.edgeDst(ne)) };
+//
+//
+//    std::vector<cv::Point2f> right_triangle = { right_img_subdiv.getVertex(left_img_subdiv.edgeOrg(e)),
+//                                                right_img_subdiv.getVertex(left_img_subdiv.edgeDst(e)),
+//                                                right_img_subdiv.getVertex(left_img_subdiv.edgeDst(ne)) };
+//
+//
+//
+//    cv::Mat_<float> M = getAffineTransform(left_triangle, right_triangle);
+//
+//    cv::Mat pointMat = (cv::Mat_<float>(3, 1) << point.x, point.y, 1);
+//
+//    cv::Mat transformedPointMat = M * pointMat;
+//
+//    cv::Point2f transformedPoint(transformedPointMat.at<float>(0, 0), transformedPointMat.at<float>(1, 0));
+//
+//    return sf::Vector2f(transformedPoint.x,transformedPoint.y);
+//}

@@ -16,7 +16,7 @@ add_executable(astMarker
         "main.cpp"
         "image.cpp"
         "image.h"
-        imageEval.h imageEval.cpp)
+        imageEval.h imageEval.cpp asterisms.h asterisms.cpp)
 
 #include_directories(testSfml)
 
