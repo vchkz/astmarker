@@ -16,9 +16,6 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
         dst_img_points.emplace_back(dstImg.ast.getPosition(i));
     }
 
-
-
-
     sf::Image tempImage = srcImg.texture.copyToImage();
     cv::Size size(tempImage.getSize().x, tempImage.getSize().y);
     cv::Mat image(size,CV_8UC4, (void*)tempImage.getPixelsPtr(), cv::Mat::AUTO_STEP);
@@ -26,10 +23,7 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
 
     //warping points
     ast = Asterism(cv::Rect(0, 0, size.width, size.height));
-
-
     std::vector<cv::Point2f> transformedPoints;
-
     switch (currentModelType) {
         case affine:
             transformMatrix = cv::estimateAffine2D(src_img_points, dst_img_points, cv::noArray(), cv::RANSAC);
@@ -37,28 +31,17 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
             cv::warpAffine(image, warped_img, transformMatrix, image.size());
             cv::transform(src_img_points, transformedPoints, transformMatrix);
             break;
-            //warping points
-
-
-
-
         case perspective:
             transformMatrix = cv::findHomography(src_img_points, dst_img_points, cv::RANSAC);
             transformMatrix.convertTo(transformMatrix, CV_32F);
             cv::warpPerspective(image, warped_img, transformMatrix, image.size());
-
             cv::perspectiveTransform(src_img_points, transformedPoints, transformMatrix);
-
             break;
     }
 
     for (const auto& point : transformedPoints) {
         ast.insertPt(point);
-//        coordPoints.emplace_back(point.x, point.y);
     }
-
-
-
     texture.create(warped_img.cols, warped_img.rows);
     texture.update(warped_img.data);
     sprite.setTexture(texture);

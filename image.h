@@ -6,16 +6,15 @@
 class Image {
 public:
     Image();
-    sf::Texture texture;
+    Asterism ast;
+
+
     sf::Sprite sprite;
     sf::RenderTexture internalTexture;
-
     sf::RenderTexture pointsTexture;
-    Asterism ast;
-//    std::vector<sf::Vector2f> coordPoints;
+
     int hoveredCircleIndex = -1;
     int selectedCircleIndex = -1;
-    float scaleFactor = 1.0f;
 
     bool is_opened = false;
 
@@ -31,6 +30,7 @@ public:
     void drawPicture(sf::Sprite overlaySprite);
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
-//    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);
+
+    sf::Texture texture;
 };
 #endif //ASTMARKER_IMAGE_H

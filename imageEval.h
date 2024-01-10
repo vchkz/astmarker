@@ -8,22 +8,18 @@ class ImageEval : public Image{
 public:
     float lineWidth = 5.0f;
 
-    void drawEvalImg(Image ovelayImg);
     void drawEvalPoints(const Asterism& baseAst);
     bool showPoints = true;
-
 
     enum modelType {
         affine,
         perspective
     } currentModelType = perspective;
 
-    cv::Mat transformMatrix;
     void genEvalImg(const Image &srcImg, const Image &dstImg);
-//    void transformPoints(std::vector<sf::Vector2f> points);
 
-
-
+private:
+    cv::Mat transformMatrix;
 };
 
 #endif //ASTMARKER_IMAGEEVAL_H

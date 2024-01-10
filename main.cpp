@@ -35,6 +35,9 @@ struct App {
     bool showEvaluationSettingsWindow = false;
     bool pointMapping = false;
     bool isMenuShowimg = false;
+    int topMenuHeight = 20;
+    int bottomMenuHeight = 30;
+
 //    bool isMarkingAvailable = false;
 
     float zoom;
@@ -324,18 +327,10 @@ struct App {
                 isMenuShowimg = true;
                 if (ImGui::MenuItem("Open Image 1")) {
                     firstIm.openImage();
-                    if (secondIm.is_opened && (secondIm.texture.getSize().y > firstIm.texture.getSize().y)) {
-                        firstIm.scaleFactor = static_cast<float>(secondIm.texture.getSize().y) /
-                                              static_cast<float>(firstIm.texture.getSize().y);
-                    }
                     setDirty();
                 }
                 if (ImGui::MenuItem("Open Image 2")) {
                     secondIm.openImage();
-                    if (firstIm.is_opened && (firstIm.texture.getSize().y > secondIm.texture.getSize().y)) {
-                        secondIm.scaleFactor = static_cast<float>(firstIm.texture.getSize().y) /
-                                               static_cast<float>(secondIm.texture.getSize().y);
-                    }
                 }
                 ImGui::Separator();
                 if (ImGui::MenuItem("Import 1st Image Points", nullptr, false, true)) {
@@ -425,6 +420,33 @@ struct App {
             ImGui::Text("2 hoverID: %d", secondIm.hoveredCircleIndex);
         }
         ImGui::End();
+
+        if (currentState == mainScreen) {
+            ImGui::SetNextWindowPos(ImVec2(0, topMenuHeight));
+            ImGui::SetNextWindowSize(
+                    ImVec2(window.getSize().x / 3, window.getSize().y - topMenuHeight - bottomMenuHeight));
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.9f, 0.9f, 1.0f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::Begin("FIRST IMAGE", nullptr,
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+            ImGui::End();
+            ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 3, topMenuHeight));
+            ImGui::SetNextWindowSize(
+                    ImVec2(window.getSize().x / 3, window.getSize().y - topMenuHeight - bottomMenuHeight));
+            ImGui::Begin("SECOND IMAGE", nullptr,
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+            ImGui::End();
+            ImGui::SetNextWindowPos(ImVec2(window.getSize().x / 3 * 2, topMenuHeight));
+            ImGui::SetNextWindowSize(
+                    ImVec2(window.getSize().x / 3, window.getSize().y - topMenuHeight - bottomMenuHeight));
+            ImGui::Begin("OVERLAY IMAGE", nullptr,
+                         ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse);
+            ImGui::End();
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+        }
+
+
     }
 
     void render() {
