@@ -1,7 +1,7 @@
 #include "imageEval.h"
 #include "iostream"
 
-
+#define M_PI 3.14159265358979323846
 
 
 void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
@@ -72,6 +72,58 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     is_opened = true;
 
 
+
+
+}
+
+//void ImageEval::drawEvalImg(Image ovelayImg) {
+//    internalTexture.clear();
+//
+//}
+
+void ImageEval::drawEvalPoints(Image baseImg) {
+    if (showPoints) {
+        for (std::size_t i = 0; i < ast.getPts().size(); ++i) {
+            cv::Point srcPointCV(baseImg.ast.getPts()[i]);
+            cv::Point dstPointCV(ast.getPts()[i]);
+            sf::Vector2f srcPoint(
+                    baseImg.sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
+            sf::Vector2f dstPoint(
+                    sprite.getTransform().transformPoint(dstPointCV.x, dstPointCV.y));
+
+            //lines
+            sf::Vector2f delta = dstPoint - srcPoint;
+            sf::RectangleShape lineShape1;
+            sf::RectangleShape lineShape2;
+            lineShape1.setSize(sf::Vector2f(std::sqrt(delta.x * delta.x + delta.y * delta.y),
+                                            lineWidth));
+            lineShape2.setSize(sf::Vector2f(std::sqrt(delta.x * delta.x + delta.y * delta.y),
+                                            -lineWidth));
+            lineShape1.setPosition(srcPoint);
+            lineShape2.setPosition(srcPoint);
+            float angle = std::atan2(delta.y, delta.x) * (180.f / static_cast<float>(M_PI));
+            lineShape1.setRotation(angle);
+            lineShape2.setRotation(angle);
+            lineShape1.setFillColor(sf::Color::Red);
+            lineShape2.setFillColor(sf::Color::Red);
+            internalTexture.draw(lineShape1);
+            internalTexture.draw(lineShape2);
+
+            //points
+            sf::CircleShape srcCircle(pointSize);
+            srcCircle.setPosition(srcPoint);
+            srcCircle.setFillColor(sf::Color::Blue);
+            srcCircle.move(-pointSize, -pointSize);
+            internalTexture.draw(srcCircle);
+
+            sf::CircleShape dstCircle(pointSize);
+            dstCircle.setPosition(dstPoint);
+            dstCircle.move(-pointSize, -pointSize);
+            dstCircle.setFillColor(sf::Color::Red);
+            internalTexture.draw(dstCircle);
+
+        }
+    }
 }
 
 

@@ -6,9 +6,11 @@
 #include <vector>
 class ImageEval : public Image{
 public:
-    float transparency = 128.0f;
+    float transparency = 0.5f;
     float lineWidth = 5.0f;
     float pointSize = 10.0f;
+    void drawEvalImg(Image ovelayImg);
+    void drawEvalPoints(Image baseImg);
     bool showPoints = true;
 
     enum modelType {

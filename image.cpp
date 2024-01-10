@@ -145,4 +145,12 @@ void Image::drawPicture() {
     internalTexture.draw(sprite);
 }
 
+void Image::drawPicture(sf::Sprite overlaySprite, float transparency) {
+    drawPicture();
+    overlaySprite.setColor(sf::Color(255, 255, 255, transparency * 255));
+    internalTexture.draw(overlaySprite);
+//                    secondIm.sprite.setColor(sf::Color(255, 255, 255, 255));
+
+}
+
 

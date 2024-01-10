@@ -23,6 +23,7 @@ public:
 
     void drawCircles(float CircleRadius);
     void drawPicture();
+    void drawPicture(sf::Sprite overlaySprite, float transparency);
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
 //    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);
