@@ -362,6 +362,7 @@ struct App {
             }
 
         }
+        ImGui::EndMainMenuBar();
 
 
         if (showEvaluationSettingsWindow) {
@@ -415,7 +416,6 @@ struct App {
             ImGui::Text("1 hoverID: %d", firstIm.hoveredCircleIndex);
             ImGui::NextColumn();
             ImGui::Text("2 hoverID: %d", secondIm.hoveredCircleIndex);
-
         }
         ImGui::End();
 
