@@ -43,7 +43,7 @@ struct App {
         secondImage
     } currentDistortImage = firstImage;
 
-    App() : window(sf::VideoMode(600, 600), "SFML Image Viewer"), zoom(1.0f) {
+    App() : window(sf::VideoMode::getDesktopMode(), "AstMarker", sf::Style::Default), zoom(1.0f) {
 
         firstIm.internalTexture.create(window.getSize().x / 3, window.getSize().y);
         secondIm.internalTexture.create(window.getSize().x / 3, window.getSize().y);
@@ -57,18 +57,18 @@ struct App {
 
     }
 
-    void updateTextures(){
+    void updateTextures() {
         firstIm.drawPicture();
         secondIm.drawPicture();
         thirdIm.drawPicture(secondIm.sprite, transparency);
         firstIm.drawCircles(CircleRadius);
         secondIm.drawCircles(CircleRadius);
         thirdIm.drawCircles(CircleRadius);
-        if (currentDistortImage == firstImage){
+        if (currentDistortImage == firstImage) {
             evaluationImg.drawPicture(secondIm.sprite, evaluationImg.transparency);
             evaluationImg.drawEvalPoints(secondIm.ast);
         }
-        if (currentDistortImage == secondImage){
+        if (currentDistortImage == secondImage) {
             evaluationImg.drawPicture(firstIm.sprite, evaluationImg.transparency);
             evaluationImg.drawEvalPoints(firstIm.ast);
         }
@@ -98,19 +98,35 @@ struct App {
 
             } else if (event.type == sf::Event::MouseWheelScrolled) { // Масштабирование колёсиком мыши
 
-                if (event.mouseWheelScroll.delta > 0) zoom *= 1.1f;
-                else zoom /= 1.1f;
+                sf::Vector2f newCoord = window.mapPixelToCoords(sf::Mouse::getPosition(window));
+                if (newCoord.x > window.getSize().x / 3 and newCoord.x < window.getSize().x / 3 * 2 and currentState == mainScreen)
+                    newCoord.x -= window.getSize().x / 3;
+                if (newCoord.x > window.getSize().x / 3 * 2)newCoord.x -= window.getSize().x / 3 * 2 and currentState == mainScreen;
+
+                float delta = event.mouseWheelScroll.delta;
+                float scaleFactor = 1.0f + delta * 0.1f;
+                float oldZoom = zoom;
+
+                zoom *= scaleFactor;
+                translate += (newCoord - translate) - (newCoord - translate) * (zoom / oldZoom);
+
 
                 firstIm.sprite.setScale(zoom, zoom);
                 secondIm.sprite.setScale(zoom, zoom);
                 thirdIm.sprite.setScale(zoom, zoom);
                 evaluationImg.sprite.setScale(zoom, zoom);
+                firstIm.sprite.setPosition(translate);
+                secondIm.sprite.setPosition(translate);
+                thirdIm.sprite.setPosition(translate);
+                evaluationImg.sprite.setPosition(translate);
+
+
                 updateTextures();
                 setDirty();
             } else if (event.type == sf::Event::MouseMoved) {
                 sf::Vector2f newCoord(event.mouseMove.x, event.mouseMove.y);
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)){//Если зажат пробел
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {//Если зажат пробел
 
                     translate += newCoord - mouseCoord;
                     firstIm.sprite.setPosition(translate);
@@ -120,7 +136,7 @@ struct App {
 
                     updateTextures();
                 }
-                if(!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) and currentState != DistortionEvaluationScreen){
+                if (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) and currentState != DistortionEvaluationScreen) {
                     sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                     sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
                     sf::Vector2f mousePosFloat4Second(mousePosFloat.x - static_cast<float>(window.getSize().x) / 3.0f,
@@ -211,9 +227,7 @@ struct App {
                 mouseCoord = newCoord;
 
 
-
-            }
-            else if (event.type == sf::Event::MouseButtonPressed and currentState != DistortionEvaluationScreen) {
+            } else if (event.type == sf::Event::MouseButtonPressed and currentState != DistortionEvaluationScreen) {
                 sf::Vector2i mousePos = sf::Mouse::getPosition(window);
                 sf::Vector2f mousePosFloat(static_cast<float>(mousePos.x), static_cast<float>(mousePos.y));
 
@@ -344,13 +358,13 @@ struct App {
             ImGui::Separator();
             ImGui::Text("Type of transformation:");
             if (ImGui::RadioButton("Affine", (int *) &evaluationImg.currentModelType, evaluationImg.affine)) {
-                if (currentDistortImage == firstImage){evaluationImg.genEvalImg(firstIm, secondIm);}
-                if (currentDistortImage == secondImage){evaluationImg.genEvalImg(secondIm, firstIm);}
+                if (currentDistortImage == firstImage) { evaluationImg.genEvalImg(firstIm, secondIm); }
+                if (currentDistortImage == secondImage) { evaluationImg.genEvalImg(secondIm, firstIm); }
             }
             ImGui::SameLine();
             if (ImGui::RadioButton("Perspective", (int *) &evaluationImg.currentModelType, evaluationImg.perspective)) {
-                if (currentDistortImage == firstImage){evaluationImg.genEvalImg(firstIm, secondIm);}
-                if (currentDistortImage == secondImage){evaluationImg.genEvalImg(secondIm, firstIm);}
+                if (currentDistortImage == firstImage) { evaluationImg.genEvalImg(firstIm, secondIm); }
+                if (currentDistortImage == secondImage) { evaluationImg.genEvalImg(secondIm, firstIm); }
             }
             ImGui::Separator();
             ImGui::Text("Which image should be warped:");
@@ -364,9 +378,11 @@ struct App {
                 evaluationImg.drawPicture(firstIm.sprite, evaluationImg.transparency);
             }
             ImGui::Separator();
-            if(ImGui::SliderFloat("Transparency", &evaluationImg.transparency, 0.01f, 1.0f)){
-                if(currentDistortImage == firstImage)evaluationImg.drawPicture(secondIm.sprite, evaluationImg.transparency);
-                if(currentDistortImage == secondImage)evaluationImg.drawPicture(firstIm.sprite, evaluationImg.transparency);
+            if (ImGui::SliderFloat("Transparency", &evaluationImg.transparency, 0.01f, 1.0f)) {
+                if (currentDistortImage == firstImage)
+                    evaluationImg.drawPicture(secondIm.sprite, evaluationImg.transparency);
+                if (currentDistortImage == secondImage)
+                    evaluationImg.drawPicture(firstIm.sprite, evaluationImg.transparency);
             };
 
             ImGui::Separator();
@@ -468,6 +484,7 @@ struct App {
 
 int main() {
     App app;
+//    app.window.create(sf::VideoMode::getFullscreenModes()[0], "AstMarker", sf::Style::Fullscreen);
     app.run();
 
     return 0;
