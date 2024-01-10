@@ -304,6 +304,7 @@ struct App {
                         secondIm.ast.deletePt(index);
 
                         thirdIm.genWarpImg(firstIm, secondIm);
+                        updateTextures();
                     }
                 }
             }
@@ -401,7 +402,7 @@ struct App {
             }
 
             ImGui::Separator();
-            ImGui::Checkbox("Show points", &evaluationImg.showPoints);
+            if (ImGui::Checkbox("Show points", &evaluationImg.showPoints))updateTextures();
             if (ImGui::SliderFloat("Line wight", &evaluationImg.lineWidth, 1.0f, 20.0f))updateTextures();
             ImGui::End();
         }
