@@ -64,17 +64,13 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     sprite.setTexture(texture);
     is_opened = true;
 
-    drawPicture(dstImg.sprite, transparency);
+    drawPicture(dstImg.sprite);
     drawEvalPoints(dstImg.ast);
-
 }
 
-//void ImageEval::drawEvalImg(Image ovelayImg) {
-//    internalTexture.clear();
-//
-//}
 
-void ImageEval::drawEvalPoints(Asterism baseAst) {
+
+void ImageEval::drawEvalPoints(const Asterism& baseAst) {
     if (showPoints) {
         pointsTexture.clear(sf::Color(0,0,0,0));
         for (std::size_t i = 0; i < ast.countPts(); ++i) {
@@ -104,15 +100,15 @@ void ImageEval::drawEvalPoints(Asterism baseAst) {
             pointsTexture.draw(lineShape2);
 
             //points
-            sf::CircleShape srcCircle(pointSize);
+            sf::CircleShape srcCircle(pointRadius);
             srcCircle.setPosition(srcPoint);
             srcCircle.setFillColor(sf::Color::Blue);
-            srcCircle.move(-pointSize, -pointSize);
+            srcCircle.move(-pointRadius, -pointRadius);
             pointsTexture.draw(srcCircle);
 
-            sf::CircleShape dstCircle(pointSize);
+            sf::CircleShape dstCircle(pointRadius);
             dstCircle.setPosition(dstPoint);
-            dstCircle.move(-pointSize, -pointSize);
+            dstCircle.move(-pointRadius, -pointRadius);
             dstCircle.setFillColor(sf::Color::Red);
             pointsTexture.draw(dstCircle);
 

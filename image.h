@@ -19,11 +19,16 @@ public:
 
     bool is_opened = false;
 
-    void openImage();
+    static float transparency;
+    static float pointRadius;
 
-    void drawCircles(float CircleRadius);
+    void openImage();
+    void importPoints();
+    void exportPoints();
+
+    void drawCircles();
     void drawPicture();
-    void drawPicture(sf::Sprite overlaySprite, float transparency);
+    void drawPicture(sf::Sprite overlaySprite);
 
     void genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage);
 //    sf::Vector2f predictPoint(sf::Vector2<float> pointCoord, const Image &srcImage);

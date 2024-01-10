@@ -6,12 +6,12 @@
 #include <vector>
 class ImageEval : public Image{
 public:
-    float transparency = 0.5f;
     float lineWidth = 5.0f;
-    float pointSize = 10.0f;
+
     void drawEvalImg(Image ovelayImg);
-    void drawEvalPoints(Asterism baseAst);
+    void drawEvalPoints(const Asterism& baseAst);
     bool showPoints = true;
+
 
     enum modelType {
         affine,

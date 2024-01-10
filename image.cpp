@@ -6,6 +6,9 @@
 
 Image::Image() = default;
 
+float Image::transparency = 0.5f;
+float Image::pointRadius = 8.0f;
+
 void Image::openImage() {
     nfdchar_t *outPath = nullptr;
     nfdresult_t result = NFD_OpenDialog(nullptr, nullptr, &outPath);
@@ -122,13 +125,13 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
     std::cout << "time: " << duration  << std::endl;
 }
 
-void Image::drawCircles(float CircleRadius) {
+void Image::drawCircles() {
     pointsTexture.clear(sf::Color(0,0,0,0));
     for (std::size_t i = 0; i < ast.countPts(); ++i) {
-        sf::CircleShape tempCircle(CircleRadius);
+        sf::CircleShape tempCircle(pointRadius);
         cv::Point point(ast.getPosition(i));
         tempCircle.setPosition(sprite.getTransform().transformPoint(point.x, point.y));
-        tempCircle.move(-CircleRadius, -CircleRadius);
+        tempCircle.move(-pointRadius, -pointRadius);
         tempCircle.setFillColor(sf::Color::Red);
         if (hoveredCircleIndex == i){
             tempCircle.setOutlineThickness(3);
@@ -143,12 +146,32 @@ void Image::drawPicture() {
     internalTexture.draw(sprite);
 }
 
-void Image::drawPicture(sf::Sprite overlaySprite, float transparency) {
+void Image::drawPicture(sf::Sprite overlaySprite) {
     drawPicture();
     overlaySprite.setColor(sf::Color(255, 255, 255, transparency * 255));
     internalTexture.draw(overlaySprite);
 //                    secondIm.sprite.setColor(sf::Color(255, 255, 255, 255));
-
 }
+
+void Image::importPoints() {
+    nfdchar_t *outPath = nullptr;
+    nfdresult_t result = NFD_OpenDialog("txt", nullptr, &outPath);
+    if (result == NFD_OKAY) {
+        ast.loadPts(outPath);
+        drawCircles();
+    }
+    else {
+        std::cout << "nfd error" << std::endl;
+    }
+}
+
+void Image::exportPoints() {
+    nfdchar_t *outPath = nullptr;
+    nfdresult_t result = NFD_SaveDialog("txt", nullptr, &outPath);
+    if (result == NFD_OKAY) {
+        ast.savePts(outPath);
+    }
+}
+
 
 

@@ -1,6 +1,6 @@
 #include "asterisms.h"
 
-
+#include "iostream"
 Asterism::Asterism(cv::Rect rect)
         : _rect(rect)
         , _corners({ cv::Point2f(0, 0),
@@ -57,6 +57,7 @@ int Asterism::insertPt(const cv::Point2f& pt) {
 void Asterism::movePt(const int& idx, const cv::Point2f& offset) {
     cv::Point2f pt = getPosition(idx);
     if (!_rect.contains(pt + offset)) {
+        std::cout<<"32432423";
         throw std::runtime_error("Point is out of bounds.");
     }
     setPosition(idx, pt + offset);
