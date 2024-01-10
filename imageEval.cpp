@@ -9,12 +9,14 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     std::vector<cv::Point2f> src_img_points;
     std::vector<cv::Point2f> dst_img_points;
 
-    for (const auto& point : srcImg.ast.getPts()) {
-        src_img_points.emplace_back(point.x, point.y);
+    for (int i = 0; i < srcImg.ast.countPts(); ++i) {
+        src_img_points.emplace_back(srcImg.ast.getPosition(i));
     }
-    for (const auto& point : dstImg.ast.getPts()) {
-        dst_img_points.emplace_back(point.x, point.y);
+    for (int i = 0; i < dstImg.ast.countPts(); ++i) {
+        dst_img_points.emplace_back(dstImg.ast.getPosition(i));
     }
+
+
 
 
     sf::Image tempImage = srcImg.texture.copyToImage();
@@ -23,12 +25,9 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     cv::Mat warped_img;
 
     //warping points
-    ast = Asterism(size.width, size.height);
+    ast = Asterism(cv::Rect(0, 0, size.width, size.height));
 
-    std::vector<cv::Point2f> cvPoints;
-    for (const auto& point : srcImg.ast.getPts()) {
-        cvPoints.emplace_back(point.x, point.y);
-    }
+
     std::vector<cv::Point2f> transformedPoints;
 
     switch (currentModelType) {
@@ -36,7 +35,7 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
             transformMatrix = cv::estimateAffine2D(src_img_points, dst_img_points, cv::noArray(), cv::RANSAC);
             transformMatrix.convertTo(transformMatrix, CV_32F);
             cv::warpAffine(image, warped_img, transformMatrix, image.size());
-            cv::transform(cvPoints, transformedPoints, transformMatrix);
+            cv::transform(src_img_points, transformedPoints, transformMatrix);
             break;
             //warping points
 
@@ -48,7 +47,7 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
             transformMatrix.convertTo(transformMatrix, CV_32F);
             cv::warpPerspective(image, warped_img, transformMatrix, image.size());
 
-            cv::perspectiveTransform(cvPoints, transformedPoints, transformMatrix);
+            cv::perspectiveTransform(src_img_points, transformedPoints, transformMatrix);
 
             break;
     }
@@ -78,9 +77,9 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
 void ImageEval::drawEvalPoints(Asterism baseAst) {
     if (showPoints) {
         pointsTexture.clear(sf::Color(0,0,0,0));
-        for (std::size_t i = 0; i < ast.getPts().size(); ++i) {
-            cv::Point srcPointCV(baseAst.getPts()[i]);
-            cv::Point dstPointCV(ast.getPts()[i]);
+        for (std::size_t i = 0; i < ast.countPts(); ++i) {
+            cv::Point srcPointCV(baseAst.getPosition(i));
+            cv::Point dstPointCV(ast.getPosition(i));
             sf::Vector2f srcPoint(
                     sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
             sf::Vector2f dstPoint(

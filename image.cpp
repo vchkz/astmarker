@@ -15,7 +15,7 @@ void Image::openImage() {
         }
         is_opened = true;
         sprite.setTexture(texture);
-        ast = Asterism(texture.getSize().x, texture.getSize().y);
+        ast = Asterism(cv::Rect(0, 0, texture.getSize().x, texture.getSize().y));
         drawPicture();
     }
     else {
@@ -33,16 +33,14 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
     std::vector<cv::Point2f> a_n = {{0,0}, {0,height}, {width, 0}, {width, height}};
     std::vector<cv::Point2f> a_k = {{0,0}, {0,height}, {width, 0}, {width, height}};
 
-
-
-
-
-    for (const auto& point : firstSourceImage.ast.getPts()) {
-        a_n.emplace_back(point.x, point.y);
+    for (int i = 0; i < firstSourceImage.ast.countPts(); ++i) {
+        a_n.emplace_back(firstSourceImage.ast.getPosition(i));
     }
-    for (const auto& point : secondSourceImage.ast.getPts()) {
-        a_k.emplace_back(point.x, point.y);
+    for (int i = 0; i < secondSourceImage.ast.countPts(); ++i) {
+        a_k.emplace_back(secondSourceImage.ast.getPosition(i));
     }
+
+
 
 
     cv::Subdiv2D subdiv(cv::Rect(0, 0, width * 10, height * 10));
@@ -126,9 +124,9 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 
 void Image::drawCircles(float CircleRadius) {
     pointsTexture.clear(sf::Color(0,0,0,0));
-    for (std::size_t i = 0; i < ast.getPts().size(); ++i) {
+    for (std::size_t i = 0; i < ast.countPts(); ++i) {
         sf::CircleShape tempCircle(CircleRadius);
-        cv::Point point(ast.getPts()[i]);
+        cv::Point point(ast.getPosition(i));
         tempCircle.setPosition(sprite.getTransform().transformPoint(point.x, point.y));
         tempCircle.move(-CircleRadius, -CircleRadius);
         tempCircle.setFillColor(sf::Color::Red);

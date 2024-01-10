@@ -99,9 +99,11 @@ struct App {
             } else if (event.type == sf::Event::MouseWheelScrolled) { // Масштабирование колёсиком мыши
 
                 sf::Vector2f newCoord = window.mapPixelToCoords(sf::Mouse::getPosition(window));
-                if (newCoord.x > window.getSize().x / 3 and newCoord.x < window.getSize().x / 3 * 2 and currentState == mainScreen)
+                if (newCoord.x > window.getSize().x / 3 and newCoord.x < window.getSize().x / 3 * 2 and
+                    currentState == mainScreen)
                     newCoord.x -= window.getSize().x / 3;
-                if (newCoord.x > window.getSize().x / 3 * 2)newCoord.x -= window.getSize().x / 3 * 2 and currentState == mainScreen;
+                if (newCoord.x > window.getSize().x / 3 * 2)newCoord.x -= window.getSize().x / 3 * 2 and
+                                                                          currentState == mainScreen;
 
                 float delta = event.mouseWheelScroll.delta;
                 float scaleFactor = 1.0f + delta * 0.1f;
@@ -146,81 +148,80 @@ struct App {
 
                     // Обработка hover для первой трети окна
                     if (!pointMapping) {
-                        if ((mousePos.x < window.getSize().x / 3) and firstIm.is_opened and secondIm.is_opened) {
+                        if ((mousePos.x < window.getSize().x / 3) and firstIm.sprite.getGlobalBounds().contains(mousePosFloat) and firstIm.is_opened and secondIm.is_opened) {
                             int oldHoveredCircleIndex = firstIm.hoveredCircleIndex;
-                            bool loopCompleted = true;
-                            for (int i = 0; i < firstIm.ast.getPts().size(); ++i) {
-                                sf::Vector2f circleCenter(
-                                        firstIm.sprite.getTransform().transformPoint(firstIm.ast.getPts()[i].x,
-                                                                                     firstIm.ast.getPts()[i].y));
+                            sf::Vector2f mousePosInImg = firstIm.sprite.getInverseTransform().transformPoint(
+                                    mousePosFloat);
 
-                                if (std::pow(mousePosFloat.x - circleCenter.x, 2) +
-                                    std::pow(mousePosFloat.y - circleCenter.y, 2) <= std::pow(CircleRadius, 2)) {
-                                    firstIm.hoveredCircleIndex = i;
-                                    secondIm.hoveredCircleIndex = i;
-                                    loopCompleted = false;
-                                    break;
+                            int idx = firstIm.ast.findNearestPt(cv::Point2f(mousePosInImg.x, mousePosInImg.y));
+                            if (idx < 0) { firstIm.hoveredCircleIndex = -1; }
+                            else {
+                                cv::Point2f nearestPt = firstIm.ast.getPosition(idx);
+
+                                if (cv::norm(nearestPt - cv::Point2f(mousePosInImg.x, mousePosInImg.y)) <=
+                                    CircleRadius * zoom) {
+                                    firstIm.hoveredCircleIndex = idx;
+                                    secondIm.hoveredCircleIndex = idx;
+                                } else {
+                                    firstIm.hoveredCircleIndex = -1;
+                                    secondIm.hoveredCircleIndex = -1;
                                 }
-                            }
-                            if (loopCompleted) {
-                                firstIm.hoveredCircleIndex = -1;
-                                secondIm.hoveredCircleIndex = -1;
-                            }
-
-                            if (oldHoveredCircleIndex != firstIm.hoveredCircleIndex) {
-                                firstIm.drawCircles(CircleRadius);
-                                secondIm.drawCircles(CircleRadius);
+                                if (oldHoveredCircleIndex != firstIm.hoveredCircleIndex) {
+                                    firstIm.drawCircles(CircleRadius);
+                                    secondIm.drawCircles(CircleRadius);
+                                }
                             }
                         }
                         // Обработка hover для второй трети окна
-                        if (mousePos.x > window.getSize().x / 3 and mousePos.x < window.getSize().x / 3 * 2 and
+                        if (mousePos.x > window.getSize().x / 3 and secondIm.sprite.getGlobalBounds().contains(mousePosFloat - sf::Vector2f(window.getSize().x / 3, 0)) and mousePos.x < window.getSize().x / 3 * 2 and
                             secondIm.is_opened) {
                             int oldHoveredCircleIndex = secondIm.hoveredCircleIndex;
-                            bool loopCompleted = true;
-                            for (int i = 0; i < secondIm.ast.getPts().size(); ++i) {
-                                sf::Vector2f circleCenter(
-                                        secondIm.sprite.getTransform().transformPoint(secondIm.ast.getPts()[i].x,
-                                                                                      secondIm.ast.getPts()[i].y));
-                                if (std::pow(mousePosFloat4Second.x - circleCenter.x, 2) +
-                                    std::pow(mousePosFloat4Second.y - circleCenter.y, 2) <= std::pow(CircleRadius, 2)) {
-                                    firstIm.hoveredCircleIndex = i;
-                                    secondIm.hoveredCircleIndex = i;
-                                    loopCompleted = false;
-                                    break;
+
+                            sf::Vector2f mousePosInImg = secondIm.sprite.getInverseTransform().transformPoint(
+                                    mousePosFloat - sf::Vector2f(window.getSize().x / 3, 0));
+
+                            int idx = secondIm.ast.findNearestPt(cv::Point2f(mousePosInImg.x, mousePosInImg.y));
+                            if (idx < 0) { secondIm.hoveredCircleIndex = -1; }
+                            else {
+                                cv::Point2f nearestPt = secondIm.ast.getPosition(idx);
+
+                                if (cv::norm(nearestPt - cv::Point2f(mousePosInImg.x, mousePosInImg.y)) <=
+                                    CircleRadius * zoom) {
+                                    firstIm.hoveredCircleIndex = idx;
+                                    secondIm.hoveredCircleIndex = idx;
+                                } else {
+                                    firstIm.hoveredCircleIndex = -1;
+                                    secondIm.hoveredCircleIndex = -1;
+                                }
+                                if (oldHoveredCircleIndex != secondIm.hoveredCircleIndex) {
+                                    firstIm.drawCircles(CircleRadius);
+                                    secondIm.drawCircles(CircleRadius);
                                 }
                             }
-                            if (loopCompleted) {
-                                firstIm.hoveredCircleIndex = -1;
-                                secondIm.hoveredCircleIndex = -1;
-                            }
-                            if (oldHoveredCircleIndex != secondIm.hoveredCircleIndex) {
-                                firstIm.drawCircles(CircleRadius);
-                                secondIm.drawCircles(CircleRadius);
-                            }
+
                         }
                     }
 
 
                     if (firstIm.selectedCircleIndex != -1) {
-                        if (mousePos.x > window.getSize().x / 3) {
-                            mousePosFloat -= sf::Vector2f(window.getSize().x / 3, 0);
-                        }
-                        sf::Vector2i position(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
-                        firstIm.ast.setPosition(firstIm.selectedCircleIndex, cv::Point(position.x, position.y));
-//                        sf::Vector2i offset(sf::Vector2i(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat)) -
-//                                                    sf::Vector2i(firstIm.sprite.getInverseTransform().transformPoint(mouseCoord)));
-//                        firstIm.ast.movePt(firstIm.selectedCircleIndex, cv::Point(offset.x, offset.y));
+//                        if (mousePos.x > window.getSize().x / 3) {
+//                            mousePosFloat -= sf::Vector2f(window.getSize().x / 3, 0);
+//                        }
+//                        sf::Vector2i position(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+//                        firstIm.ast.setPosition(firstIm.selectedCircleIndex, cv::Point(position.x, position.y));
+                        sf::Vector2f offset(
+                                sf::Vector2f(firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat)) -
+                                sf::Vector2f(firstIm.sprite.getInverseTransform().transformPoint(mouseCoord)));
+                        firstIm.ast.movePt(firstIm.selectedCircleIndex, cv::Point2f(offset.x, offset.y));
                         firstIm.drawCircles(CircleRadius);
                     }
                     if (secondIm.selectedCircleIndex != -1) {
-                        if (mousePos.x > window.getSize().x / 3) {
-                            mousePosFloat -= sf::Vector2f(window.getSize().x / 3, 0);
-                        }
-                        sf::Vector2i position(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
-                        secondIm.ast.setPosition(secondIm.selectedCircleIndex, cv::Point(position.x, position.y));
-//                        sf::Vector2i offset(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat) -
-//                                                    secondIm.sprite.getInverseTransform().transformPoint(mouseCoord));
-//                        secondIm.ast.movePt(secondIm.selectedCircleIndex, cv::Point(offset.x, offset.y));
+
+//                        sf::Vector2i position(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat));
+//                        secondIm.ast.setPosition(secondIm.selectedCircleIndex, cv::Point(position.x, position.y));
+                        sf::Vector2f offset(secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat) -
+                                            secondIm.sprite.getInverseTransform().transformPoint(mouseCoord));
+                        secondIm.ast.movePt(secondIm.selectedCircleIndex, cv::Point2f(offset.x, offset.y));
                         secondIm.drawCircles(CircleRadius);
                     }
                 }
@@ -242,11 +243,11 @@ struct App {
                             firstIm.sprite.getGlobalBounds().contains(mousePosFloat)) {
                             sf::Vector2f point = firstIm.sprite.getInverseTransform().transformPoint(mousePosFloat);
                             secondIm.ast.insertPt(
-                                    secondIm.ast.predictPairedPt(cv::Point(point.x, point.y), firstIm.ast));
+                                    secondIm.ast.predictPosition(cv::Point2f(point.x, point.y), firstIm.ast));
                             firstIm.ast.insertPt(cv::Point(point.x, point.y));
-                            secondIm.selectedCircleIndex = secondIm.ast.getPts().size() - 1;
-                            firstIm.hoveredCircleIndex = firstIm.ast.getPts().size() - 1;
-                            secondIm.hoveredCircleIndex = firstIm.ast.getPts().size() - 1;
+                            secondIm.selectedCircleIndex = secondIm.ast.countPts() - 1;
+                            firstIm.hoveredCircleIndex = firstIm.ast.countPts() - 1;
+                            secondIm.hoveredCircleIndex = firstIm.ast.countPts() - 1;
                             firstIm.drawCircles(CircleRadius);
                             secondIm.drawCircles(CircleRadius);
                             setDirty();
@@ -262,11 +263,11 @@ struct App {
                             secondIm.sprite.getGlobalBounds().contains(mousePosFloat)) {
                             sf::Vector2f point = secondIm.sprite.getInverseTransform().transformPoint(mousePosFloat);
                             firstIm.ast.insertPt(
-                                    firstIm.ast.predictPairedPt(cv::Point(point.x, point.y), secondIm.ast));
+                                    firstIm.ast.predictPosition(cv::Point(point.x, point.y), secondIm.ast));
                             secondIm.ast.insertPt(cv::Point(point.x, point.y));
-                            firstIm.selectedCircleIndex = firstIm.ast.getPts().size() - 1;
-                            firstIm.hoveredCircleIndex = firstIm.ast.getPts().size() - 1;
-                            secondIm.hoveredCircleIndex = firstIm.ast.getPts().size() - 1;
+                            firstIm.selectedCircleIndex = firstIm.ast.countPts() - 1;
+                            firstIm.hoveredCircleIndex = firstIm.ast.countPts() - 1;
+                            secondIm.hoveredCircleIndex = firstIm.ast.countPts() - 1;
                             firstIm.drawCircles(CircleRadius);
                             secondIm.drawCircles(CircleRadius);
                             setDirty();
@@ -333,7 +334,7 @@ struct App {
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("Warp evaluation")) {
-                if (ImGui::MenuItem("Warp image", nullptr, false, firstIm.ast.getPts().size() > 3)) {
+                if (ImGui::MenuItem("Warp image", nullptr, false, firstIm.ast.countPts() > 3)) {
                     currentState = DistortionEvaluationScreen;
                     evaluationImg.genEvalImg(firstIm, secondIm);
                     evaluationImg.drawPicture(secondIm.sprite, evaluationImg.transparency);
