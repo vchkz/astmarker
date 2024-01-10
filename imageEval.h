@@ -10,7 +10,7 @@ public:
     float lineWidth = 5.0f;
     float pointSize = 10.0f;
     void drawEvalImg(Image ovelayImg);
-    void drawEvalPoints(Image baseImg);
+    void drawEvalPoints(Asterism baseAst);
     bool showPoints = true;
 
     enum modelType {

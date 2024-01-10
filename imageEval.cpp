@@ -20,11 +20,9 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     sf::Image tempImage = srcImg.texture.copyToImage();
     cv::Size size(tempImage.getSize().x, tempImage.getSize().y);
     cv::Mat image(size,CV_8UC4, (void*)tempImage.getPixelsPtr(), cv::Mat::AUTO_STEP);
-
     cv::Mat warped_img;
 
     //warping points
-//    coordPoints.clear();
     ast = Asterism(size.width, size.height);
 
     std::vector<cv::Point2f> cvPoints;
@@ -38,11 +36,8 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
             transformMatrix = cv::estimateAffine2D(src_img_points, dst_img_points, cv::noArray(), cv::RANSAC);
             transformMatrix.convertTo(transformMatrix, CV_32F);
             cv::warpAffine(image, warped_img, transformMatrix, image.size());
-
             cv::transform(cvPoints, transformedPoints, transformMatrix);
-
             break;
-
             //warping points
 
 
@@ -55,8 +50,6 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
 
             cv::perspectiveTransform(cvPoints, transformedPoints, transformMatrix);
 
-
-
             break;
     }
 
@@ -66,13 +59,14 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
     }
 
 
+
     texture.create(warped_img.cols, warped_img.rows);
     texture.update(warped_img.data);
     sprite.setTexture(texture);
     is_opened = true;
 
-
-
+    drawPicture(dstImg.sprite, transparency);
+    drawEvalPoints(dstImg.ast);
 
 }
 
@@ -81,13 +75,14 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
 //
 //}
 
-void ImageEval::drawEvalPoints(Image baseImg) {
+void ImageEval::drawEvalPoints(Asterism baseAst) {
     if (showPoints) {
+        pointsTexture.clear(sf::Color(0,0,0,0));
         for (std::size_t i = 0; i < ast.getPts().size(); ++i) {
-            cv::Point srcPointCV(baseImg.ast.getPts()[i]);
+            cv::Point srcPointCV(baseAst.getPts()[i]);
             cv::Point dstPointCV(ast.getPts()[i]);
             sf::Vector2f srcPoint(
-                    baseImg.sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
+                    sprite.getTransform().transformPoint(srcPointCV.x, srcPointCV.y));
             sf::Vector2f dstPoint(
                     sprite.getTransform().transformPoint(dstPointCV.x, dstPointCV.y));
 
@@ -106,21 +101,21 @@ void ImageEval::drawEvalPoints(Image baseImg) {
             lineShape2.setRotation(angle);
             lineShape1.setFillColor(sf::Color::Red);
             lineShape2.setFillColor(sf::Color::Red);
-            internalTexture.draw(lineShape1);
-            internalTexture.draw(lineShape2);
+            pointsTexture.draw(lineShape1);
+            pointsTexture.draw(lineShape2);
 
             //points
             sf::CircleShape srcCircle(pointSize);
             srcCircle.setPosition(srcPoint);
             srcCircle.setFillColor(sf::Color::Blue);
             srcCircle.move(-pointSize, -pointSize);
-            internalTexture.draw(srcCircle);
+            pointsTexture.draw(srcCircle);
 
             sf::CircleShape dstCircle(pointSize);
             dstCircle.setPosition(dstPoint);
             dstCircle.move(-pointSize, -pointSize);
             dstCircle.setFillColor(sf::Color::Red);
-            internalTexture.draw(dstCircle);
+            pointsTexture.draw(dstCircle);
 
         }
     }
