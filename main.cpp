@@ -372,7 +372,11 @@ struct App {
 
 
         if (showEvaluationSettingsWindow) {
+            ImGui::SetNextWindowPos(ImVec2(window.getSize().x - 300.0f, 30.0f), ImGuiCond_Once);
+            ImGui::SetNextWindowSize(ImVec2(300.0f, 300.0f), ImGuiCond_Once);
+
             ImGui::Begin("Model Settings", &showEvaluationSettingsWindow);
+
             ImGui::Separator();
             ImGui::Text("Type of transformation:");
             if (ImGui::RadioButton("Affine", (int *) &evaluationImg.currentModelType, evaluationImg.affine)) {

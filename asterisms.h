@@ -86,7 +86,7 @@ public:
     cv::Size getRectSize() const noexcept { return _rect.size(); }
 
 private:
-    cv::Rect _rect;
+    cv::Rect2f _rect;
     cv::Subdiv2D _subdiv;
     std::vector<cv::Point2f> _points;
     std::vector<int> _free_indices;

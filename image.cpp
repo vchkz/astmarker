@@ -27,14 +27,18 @@ void Image::openImage() {
 }
 void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage){
     clock_t start = clock();
-    sf::Image tempImage = firstSourceImage.texture.copyToImage();
-    cv::Size size(tempImage.getSize().x, tempImage.getSize().y);
-    cv::Mat image(size,CV_8UC4, (void*)tempImage.getPixelsPtr(), cv::Mat::AUTO_STEP);
+    sf::Image srcImg = firstSourceImage.texture.copyToImage();
+    sf::Image dstImg = secondSourceImage.texture.copyToImage();
+    cv::Size2f srcImgSize(srcImg.getSize().x, srcImg.getSize().y);
+    cv::Size2f dstImgSize(dstImg.getSize().x, dstImg.getSize().y);
+    cv::Mat image(srcImgSize,CV_8UC4, (void*)srcImg.getPixelsPtr(), cv::Mat::AUTO_STEP);
     cv::cvtColor(image, image, cv::COLOR_RGBA2RGB);
-    float width = firstSourceImage.texture.getSize().x - 1;
-    float height = firstSourceImage.texture.getSize().y - 1;
-    std::vector<cv::Point2f> a_n = {{0,0}, {0,height}, {width, 0}, {width, height}};
-    std::vector<cv::Point2f> a_k = {{0,0}, {0,height}, {width, 0}, {width, height}};
+
+//    srcImgSize -= cv::Size2f(1, 1);
+//    dstImgSize -= cv::Size2f(1, 1);
+
+    std::vector<cv::Point2f> a_n = {{0,0}, {0,srcImgSize.height - 1}, {srcImgSize.width - 1, 0}, {srcImgSize.width - 1, srcImgSize.height - 1}};
+    std::vector<cv::Point2f> a_k = {{0,0}, {0,dstImgSize.height - 1}, {dstImgSize.width - 1, 0}, {dstImgSize.width - 1, dstImgSize.height - 1}};
 
     for (int i = 0; i < firstSourceImage.ast.countPts(); ++i) {
         a_n.emplace_back(firstSourceImage.ast.getPosition(i));
@@ -43,20 +47,15 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
         a_k.emplace_back(secondSourceImage.ast.getPosition(i));
     }
 
-
-
-
-    cv::Subdiv2D subdiv(cv::Rect(0, 0, width * 10, height * 10));
+    cv::Subdiv2D subdiv(cv::Rect(0, 0, srcImgSize.width * 10, srcImgSize.height * 10));
 
     for (auto &p : a_n) {
         subdiv.insert(p);
     }
-
     std::vector<cv::Vec6f> triangulation_n;
     subdiv.getTriangleList(triangulation_n);
 
-    cv::Mat result_image = cv::Mat::zeros(image.size(), image.type());
-
+    cv::Mat result_image = cv::Mat::zeros(dstImgSize, image.type());
 
     for (auto &t: triangulation_n) {
         std::vector<cv::Point2f> src_points = {{t[0], t[1]}, {t[2], t[3]}, {t[4], t[5]}};
@@ -95,10 +94,6 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
         }
 
         cv::Mat roi = image(src_bounding_rect);
-        cv::Mat roi_mask(roi.size(), CV_8U, cv::Scalar(0));
-        cv::fillConvexPoly(roi_mask, int_local_src_points, cv::Scalar(1), 16, 0);
-        cv::Mat roi_triangle;
-        roi.copyTo(roi_triangle, roi_mask);
 
         cv::Mat local_transform = cv::getAffineTransform(local_src_points, local_dst_points);
         cv::Mat warped;
