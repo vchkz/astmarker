@@ -150,7 +150,6 @@ void Image::drawPicture(sf::Sprite overlaySprite) {
     drawPicture();
     overlaySprite.setColor(sf::Color(255, 255, 255, transparency * 255));
     internalTexture.draw(overlaySprite);
-//                    secondIm.sprite.setColor(sf::Color(255, 255, 255, 255));
 }
 
 void Image::importPoints() {

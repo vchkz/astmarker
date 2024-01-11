@@ -23,9 +23,6 @@ struct App {
     Image secondIm;
     Image thirdIm;
 
-//    float CircleRadius = 10;
-//    float transparency = 0.5f;
-
     ImageEval evaluationImg;
 
     bool isDirty = true;
@@ -38,7 +35,6 @@ struct App {
     int topMenuHeight = 20;
     int bottomMenuHeight = 30;
 
-//    bool isMarkingAvailable = false;
 
     float zoom;
 

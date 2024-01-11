@@ -9,17 +9,15 @@ find_package(unofficial-nativefiledialog CONFIG REQUIRED)
 find_package(SFML COMPONENTS system window graphics CONFIG REQUIRED)
 find_package(ImGui-SFML CONFIG REQUIRED)
 
-#add_subdirectory(testSfml)
-
 
 add_executable(astMarker
         "main.cpp"
         "image.cpp"
         "image.h"
-        imageEval.h imageEval.cpp asterisms.h asterisms.cpp)
-
-#include_directories(testSfml)
-
+        "imageEval.h"
+        "imageEval.cpp"
+        "asterisms.h"
+        "asterisms.cpp")
 
 target_link_libraries(astMarker
         ${OpenCV_LIBS}
@@ -34,5 +32,3 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET astMarker PROPERTY CXX_STANDARD 20)
 endif()
 
-
-#add_subdirectory(testCV)
