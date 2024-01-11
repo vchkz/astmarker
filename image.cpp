@@ -20,25 +20,28 @@ void Image::openImage() {
         sprite.setTexture(texture);
         ast = Asterism(cv::Rect(0, 0, texture.getSize().x, texture.getSize().y));
         drawPicture();
-    }
-    else {
+    } else {
         std::cout << "nfd error" << std::endl;
     }
 }
-void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage){
+
+void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceImage) {
     clock_t start = clock();
     sf::Image srcImg = firstSourceImage.texture.copyToImage();
     sf::Image dstImg = secondSourceImage.texture.copyToImage();
     cv::Size2f srcImgSize(srcImg.getSize().x, srcImg.getSize().y);
     cv::Size2f dstImgSize(dstImg.getSize().x, dstImg.getSize().y);
-    cv::Mat image(srcImgSize,CV_8UC4, (void*)srcImg.getPixelsPtr(), cv::Mat::AUTO_STEP);
+    cv::Mat image(srcImgSize, CV_8UC4, (void *) srcImg.getPixelsPtr(), cv::Mat::AUTO_STEP);
     cv::cvtColor(image, image, cv::COLOR_RGBA2RGB);
 
-//    srcImgSize -= cv::Size2f(1, 1);
-//    dstImgSize -= cv::Size2f(1, 1);
-
-    std::vector<cv::Point2f> a_n = {{0,0}, {0,srcImgSize.height - 1}, {srcImgSize.width - 1, 0}, {srcImgSize.width - 1, srcImgSize.height - 1}};
-    std::vector<cv::Point2f> a_k = {{0,0}, {0,dstImgSize.height - 1}, {dstImgSize.width - 1, 0}, {dstImgSize.width - 1, dstImgSize.height - 1}};
+    std::vector<cv::Point2f> a_n = {{0,                    0},
+                                    {0,                    srcImgSize.height - 1},
+                                    {srcImgSize.width - 1, 0},
+                                    {srcImgSize.width - 1, srcImgSize.height - 1}};
+    std::vector<cv::Point2f> a_k = {{0,                    0},
+                                    {0,                    dstImgSize.height - 1},
+                                    {dstImgSize.width - 1, 0},
+                                    {dstImgSize.width - 1, dstImgSize.height - 1}};
 
     for (int i = 0; i < firstSourceImage.ast.countPts(); ++i) {
         a_n.emplace_back(firstSourceImage.ast.getPosition(i));
@@ -49,7 +52,7 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 
     cv::Subdiv2D subdiv(cv::Rect(0, 0, srcImgSize.width * 10, srcImgSize.height * 10));
 
-    for (auto &p : a_n) {
+    for (auto &p: a_n) {
         subdiv.insert(p);
     }
     std::vector<cv::Vec6f> triangulation_n;
@@ -58,7 +61,9 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
     cv::Mat result_image = cv::Mat::zeros(dstImgSize, image.type());
 
     for (auto &t: triangulation_n) {
-        std::vector<cv::Point2f> src_points = {{t[0], t[1]}, {t[2], t[3]}, {t[4], t[5]}};
+        std::vector<cv::Point2f> src_points = {{t[0], t[1]},
+                                               {t[2], t[3]},
+                                               {t[4], t[5]}};
         std::vector<cv::Point2f> dst_points;
         for (auto &pt: src_points) {
             for (size_t i = 0; i < a_n.size(); ++i) {
@@ -79,10 +84,10 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
         std::vector<cv::Point2f> local_dst_points;
 
         for (auto &pt: src_points) {
-            local_src_points.push_back(pt-shift_src);
+            local_src_points.push_back(pt - shift_src);
         }
         for (auto &pt: dst_points) {
-            local_dst_points.push_back(pt-shift_dst);
+            local_dst_points.push_back(pt - shift_dst);
         }
         std::vector<cv::Point> int_local_src_points;
         for (const auto &point: local_src_points) {
@@ -117,18 +122,18 @@ void Image::genWarpImg(const Image &firstSourceImage, const Image &secondSourceI
 
     clock_t end = clock();
     double duration = double(end - start) / CLOCKS_PER_SEC;
-    std::cout << "time: " << duration  << std::endl;
+    std::cout << "time: " << duration << std::endl;
 }
 
 void Image::drawCircles() {
-    pointsTexture.clear(sf::Color(0,0,0,0));
+    pointsTexture.clear(sf::Color(0, 0, 0, 0));
     for (std::size_t i = 0; i < ast.countPts(); ++i) {
         sf::CircleShape tempCircle(pointRadius);
         cv::Point point(ast.getPosition(i));
         tempCircle.setPosition(sprite.getTransform().transformPoint(point.x, point.y));
         tempCircle.move(-pointRadius, -pointRadius);
         tempCircle.setFillColor(sf::Color::Red);
-        if (hoveredCircleIndex == i){
+        if (hoveredCircleIndex == i) {
             tempCircle.setOutlineThickness(3);
             tempCircle.setOutlineColor(sf::Color(255, 178, 102));
         }
@@ -154,8 +159,7 @@ void Image::importPoints() {
     if (result == NFD_OKAY) {
         ast.loadPts(outPath);
         drawCircles();
-    }
-    else {
+    } else {
         std::cout << "nfd error" << std::endl;
     }
 }

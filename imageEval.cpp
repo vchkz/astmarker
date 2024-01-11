@@ -60,8 +60,8 @@ void ImageEval::genEvalImg(const Image &srcImg, const Image &dstImg) {
 
 
 void ImageEval::drawEvalPoints(const Asterism& baseAst) {
+    pointsTexture.clear(sf::Color(0,0,0,0));
     if (showPoints) {
-        pointsTexture.clear(sf::Color(0,0,0,0));
         for (std::size_t i = 0; i < ast.countPts(); ++i) {
             cv::Point srcPointCV(baseAst.getPosition(i));
             cv::Point dstPointCV(ast.getPosition(i));

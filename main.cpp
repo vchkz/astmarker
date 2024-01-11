@@ -418,10 +418,6 @@ struct App {
             ImGui::NextColumn();
             if (ImGui::SliderFloat("Transparency", &Image::transparency, 0.0f, 1.0f)) updateTextures();
 
-            ImGui::NextColumn();
-            ImGui::Text("menuActive %d", isMenuShowimg);
-            ImGui::NextColumn();
-            ImGui::Text("2 hoverID: %d", secondIm.hoveredCircleIndex);
         }
         ImGui::End();
 
@@ -524,7 +520,6 @@ struct App {
 
 int main() {
     App app;
-//    app.window.create(sf::VideoMode::getFullscreenModes()[0], "AstMarker", sf::Style::Fullscreen);
     app.run();
 
     return 0;
