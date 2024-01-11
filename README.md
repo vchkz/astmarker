@@ -23,7 +23,7 @@ AstMarker - программа с графическим интерфейсом 
 
 
 <p align="center">
-<img src="Demo_Images/demoWin.jpeg" width="500", alt="Окно AstMarker">
+<img src="Demo_Images/demoWin.jpeg", alt="Окно AstMarker">
 <br>
   <em>Окно AstMarker</em>
   </p>
@@ -45,7 +45,7 @@ AstMarker - программа с графическим интерфейсом 
 - Размер точек, размер линий и прозрачность можно менять с помощью слайдеров.
 
 <p align="center">
-<img src="Demo_Images/demoEval.jpeg" width="500">
+<img src="Demo_Images/demoEval.jpeg">
 <br>
   <em>Функция оценки моделей искажения</em>
   </p>
